@@ -2,3 +2,5 @@ node_modules/
 .env
 uploads/*
 !uploads/.gitkeep
+CLAUDE.md
+MERN-EventSphere_Management.docx

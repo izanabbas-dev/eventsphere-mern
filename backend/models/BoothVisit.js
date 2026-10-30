@@ -5,6 +5,8 @@ const boothVisitSchema = new mongoose.Schema(
     booth: { type: mongoose.Schema.Types.ObjectId, ref: "Booth", required: true },
     expo: { type: mongoose.Schema.Types.ObjectId, ref: "Expo", required: true },
     visitor: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    // profile_view is saved automatically when an attendee opens an exhibitor profile
+    source: { type: String, enum: ["profile_view", "floor_plan", "check_in"], default: "floor_plan" },
   },
   { timestamps: true }
 );

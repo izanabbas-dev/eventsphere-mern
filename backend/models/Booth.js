@@ -4,6 +4,7 @@ const boothSchema = new mongoose.Schema(
   {
     expo: { type: mongoose.Schema.Types.ObjectId, ref: "Expo", required: true },
     boothNumber: { type: String, required: true, trim: true },
+    hall: { type: String, trim: true, default: "" },
     position: {
       row: { type: Number, required: true, min: 0 },
       col: { type: Number, required: true, min: 0 },

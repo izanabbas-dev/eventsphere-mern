@@ -1,4 +1,22 @@
-import { body } from "express-validator";
+import { body, param, query } from "express-validator";
+
+const isSingleValue = (value) => typeof value === "string";
+
+export const listExhibitorRules = [
+  param("expoId").isMongoId().withMessage("Invalid expo id"),
+  query("search").optional().custom(isSingleValue).withMessage("Search must be a single value"),
+  query("category").optional().custom(isSingleValue).withMessage("Category must be a single value"),
+];
+
+export const exhibitorProfileRules = [
+  param("id").isMongoId().withMessage("Invalid exhibitor id"),
+  query("expoId")
+    .optional()
+    .custom(isSingleValue)
+    .withMessage("Expo id must be a single value")
+    .isMongoId()
+    .withMessage("Invalid expo id"),
+];
 
 export const updateProfileRules = [
   body("companyName").optional().trim().notEmpty().withMessage("Company name cannot be empty"),

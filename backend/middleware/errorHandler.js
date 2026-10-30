@@ -18,6 +18,12 @@ export const errorHandler = (err, req, res, next) => {
     message = `${Object.keys(err.keyValue).join(", ")} already exists`;
   }
 
+  // Upload errors from multer, e.g. file too large
+  if (err.name === "MulterError") {
+    statusCode = 400;
+    message = err.code === "LIMIT_FILE_SIZE" ? "File is too large. Max size is 5 MB" : err.message;
+  }
+
   if (err.name === "ValidationError") {
     statusCode = 400;
     message = Object.values(err.errors).map((e) => e.message).join(", ");

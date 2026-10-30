@@ -5,6 +5,8 @@ const registrationSchema = new mongoose.Schema(
     attendee: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     expo: { type: mongoose.Schema.Types.ObjectId, ref: "Expo", required: true },
     session: { type: mongoose.Schema.Types.ObjectId, ref: "Session", default: null },
+    // Only expo registrations get a ticket code, session registrations don't
+    ticketCode: { type: String, unique: true, sparse: true },
     status: {
       type: String,
       enum: ["registered", "cancelled", "attended"],

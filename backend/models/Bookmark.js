@@ -5,6 +5,7 @@ const bookmarkSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     session: { type: mongoose.Schema.Types.ObjectId, ref: "Session", required: true },
     expo: { type: mongoose.Schema.Types.ObjectId, ref: "Expo", required: true },
+    remindBeforeMinutes: { type: Number, default: 30, min: 1 },
     reminderSent: { type: Boolean, default: false },
   },
   { timestamps: true }

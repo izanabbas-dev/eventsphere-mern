@@ -1,6 +1,9 @@
 import Expo from "../models/Expo.js";
 import Booth from "../models/Booth.js";
 import Session from "../models/Session.js";
+import ExhibitorApplication from "../models/ExhibitorApplication.js";
+import { emitToExpo } from "../utils/socket.js";
+import { getFileUrl, deleteFile } from "../middleware/upload.js";
 
 const expoFields = ["title", "description", "theme", "startDate", "endDate", "location"];
 
@@ -84,6 +87,8 @@ export const updateExpo = async (req, res) => {
   // save() runs the model checks, e.g. end date after start date
   await expo.save();
 
+  emitToExpo(expo._id, "expo_updated", { expo });
+
   res.status(200).json({ success: true, message: "Expo updated", expo });
 };
 
@@ -97,9 +102,10 @@ export const deleteExpo = async (req, res) => {
 
   await Booth.deleteMany({ expo: expo._id });
   await Session.deleteMany({ expo: expo._id });
+  await ExhibitorApplication.deleteMany({ expo: expo._id });
   await expo.deleteOne();
 
-  res.status(200).json({ success: true, message: "Expo and its booths and sessions deleted" });
+  res.status(200).json({ success: true, message: "Expo and its booths, sessions and applications deleted" });
 };
 
 // PATCH /api/expos/:id/status
@@ -113,5 +119,30 @@ export const updateExpoStatus = async (req, res) => {
   expo.status = req.body.status;
   await expo.save();
 
+  emitToExpo(expo._id, "expo_updated", { expo });
+
   res.status(200).json({ success: true, message: `Expo status changed to ${expo.status}`, expo });
+};
+
+// POST /api/expos/:id/banner  (form-data field: banner)
+export const uploadExpoBanner = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: "Please choose an image to upload" });
+  }
+
+  const expo = await Expo.findById(req.params.id);
+
+  if (!expo) {
+    await deleteFile(getFileUrl(req.file));
+    return res.status(404).json({ success: false, message: "Expo not found" });
+  }
+
+  const oldBanner = expo.banner;
+  expo.banner = getFileUrl(req.file);
+  await expo.save();
+  await deleteFile(oldBanner);
+
+  emitToExpo(expo._id, "expo_updated", { expo });
+
+  res.status(200).json({ success: true, message: "Banner uploaded", banner: expo.banner });
 };

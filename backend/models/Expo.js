@@ -17,6 +17,7 @@ const expoSchema = new mongoose.Schema(
       },
     },
     location: { type: String, required: true, trim: true },
+    banner: { type: String, default: "" },
     status: {
       type: String,
       enum: ["draft", "published", "ongoing", "completed", "cancelled"],

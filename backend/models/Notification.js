@@ -7,7 +7,7 @@ const notificationSchema = new mongoose.Schema(
     message: { type: String, required: true },
     type: {
       type: String,
-      enum: ["info", "application", "registration", "session", "message", "system"],
+      enum: ["info", "application", "registration", "session", "session_reminder", "message", "system"],
       default: "info",
     },
     // Frontend page to open, e.g. "/sessions/<id>"

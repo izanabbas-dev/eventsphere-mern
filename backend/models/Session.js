@@ -8,12 +8,13 @@ const sessionSchema = new mongoose.Schema(
     topic: { type: String, trim: true },
     type: {
       type: String,
-      enum: ["keynote", "talk", "workshop", "panel", "other"],
-      default: "talk",
+      enum: ["session", "workshop", "keynote", "panel"],
+      default: "session",
     },
     speakers: [
       {
         name: { type: String, required: true },
+        designation: { type: String },
         bio: { type: String },
         photo: { type: String },
       },
@@ -31,6 +32,8 @@ const sessionSchema = new mongoose.Schema(
       },
     },
     capacity: { type: Number, default: 50, min: 1 },
+    registeredCount: { type: Number, default: 0, min: 0 },
+    status: { type: String, enum: ["scheduled", "cancelled"], default: "scheduled" },
   },
   { timestamps: true }
 );
