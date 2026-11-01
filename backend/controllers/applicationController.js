@@ -4,7 +4,7 @@ import Expo from "../models/Expo.js";
 import Booth from "../models/Booth.js";
 import { createNotification } from "../utils/notify.js";
 import { emitBoothUpdated } from "../utils/socket.js";
-import { freeExhibitorBooths } from "../utils/boothHelpers.js";
+import { freeExhibitorBooths, findOtherBooth } from "../utils/boothHelpers.js";
 
 const notifyExhibitor = (exhibitorId, title, message) => {
   return createNotification({
@@ -80,7 +80,6 @@ export const withdrawApplication = async (req, res) => {
     return res.status(400).json({ success: false, message: "Only a pending application can be withdrawn" });
   }
 
-  // Booths reserved by or assigned to this exhibitor in this expo become available again
   await freeExhibitorBooths(application.expo, application.exhibitor);
 
   application.status = "withdrawn";
@@ -153,11 +152,7 @@ export const approveApplication = async (req, res) => {
       return res.status(400).json({ success: false, message: "Booth is not available" });
     }
 
-    const otherBooth = await Booth.findOne({
-      expo: booth.expo,
-      exhibitor: application.exhibitor,
-      _id: { $ne: booth._id },
-    });
+    const otherBooth = await findOtherBooth(booth.expo, application.exhibitor, booth._id);
     if (otherBooth) {
       return res.status(400).json({
         success: false,

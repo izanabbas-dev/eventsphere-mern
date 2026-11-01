@@ -6,10 +6,7 @@ import Expo from "../models/Expo.js";
 import User from "../models/User.js";
 import { getFileUrl, deleteFile, deletePrivateFile, PRIVATE_FOLDER } from "../middleware/upload.js";
 import { saveBoothVisit } from "../utils/boothHelpers.js";
-
-const isAdmin = (req) => req.user && req.user.role === "admin";
-
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+import { isAdmin, escapeRegex } from "../utils/helpers.js";
 
 // Logo is changed with POST /api/exhibitors/profile/logo, not here
 const profileFields = ["companyName", "description", "category", "website", "productsServices"];

@@ -15,8 +15,7 @@ const exhibitorProfileSchema = new mongoose.Schema(
       phone: { type: String, trim: true },
       address: { type: String, trim: true },
     },
-    // Private files in the private_uploads folder.
-    // Download with GET /api/exhibitors/:id/documents/:docId
+    // Saved in private_uploads, not served as public files
     documents: [
       {
         name: { type: String },

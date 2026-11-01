@@ -5,12 +5,10 @@ import ExhibitorProfile from "../models/ExhibitorProfile.js";
 import ExhibitorApplication from "../models/ExhibitorApplication.js";
 import { emitBoothUpdated } from "../utils/socket.js";
 import { createNotification } from "../utils/notify.js";
-import { freeBooth, saveBoothVisit } from "../utils/boothHelpers.js";
+import { freeBooth, findOtherBooth, saveBoothVisit } from "../utils/boothHelpers.js";
+import { isAdmin } from "../utils/helpers.js";
 
-const isAdmin = (req) => req.user && req.user.role === "admin";
-
-// Returns an error message if the spot is outside the floor plan or already used, otherwise null.
-// Rows and cols start from 0, so a 5x5 floor plan has rows 0-4 and cols 0-4.
+// Returns an error message, or null if the spot is free. Rows and cols start from 0.
 const getPositionError = async (expo, row, col, boothId) => {
   if (row >= expo.floorPlan.rows || col >= expo.floorPlan.cols) {
     return `Position must be inside the floor plan (row 0-${expo.floorPlan.rows - 1}, col 0-${expo.floorPlan.cols - 1})`;
@@ -155,7 +153,6 @@ export const deleteBooth = async (req, res) => {
   await booth.deleteOne();
   emitBoothUpdated(booth, "deleted");
 
-  // Tell the exhibitor that their reservation is gone
   if (booth.status === "reserved" && booth.exhibitor) {
     await createNotification({
       user: booth.exhibitor,
@@ -192,7 +189,7 @@ export const assignBooth = async (req, res) => {
     return res.status(400).json({ success: false, message: "Booth is reserved by another exhibitor" });
   }
 
-  const otherBooth = await Booth.findOne({ expo: booth.expo, exhibitor: exhibitor._id, _id: { $ne: booth._id } });
+  const otherBooth = await findOtherBooth(booth.expo, exhibitor._id, booth._id);
   if (otherBooth) {
     return res.status(400).json({
       success: false,
@@ -330,7 +327,7 @@ export const updateBoothDetails = async (req, res) => {
 };
 
 // POST /api/booths/:id/visit
-// Saves one visit so booth traffic can be shown in the analytics report (once per user per booth per hour)
+// Used for booth traffic in the analytics report
 export const recordBoothVisit = async (req, res) => {
   const booth = await Booth.findById(req.params.id).populate("expo", "status");
 

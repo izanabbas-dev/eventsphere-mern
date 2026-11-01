@@ -71,8 +71,7 @@ export const emitToExpo = (expoId, event, data) => {
   if (io) io.to(`expo_${expoId}`).emit(event, data);
 };
 
-// action is "created", "updated" or "deleted".
-// Only public fields are sent, because staff phone numbers are private.
+// Only public fields are sent, because staff phone numbers are private
 export const emitBoothUpdated = (booth, action = "updated") => {
   emitToExpo(booth.expo, "booth_updated", {
     action,

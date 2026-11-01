@@ -6,7 +6,6 @@ import { expoReportRules } from "../validators/analyticsValidator.js";
 
 const router = express.Router();
 
-// All analytics routes are for admin only
 router.use(protect, authorize("admin"));
 
 router.get("/overview", getOverview);

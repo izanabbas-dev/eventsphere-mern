@@ -1,9 +1,11 @@
 import { body, param, query } from "express-validator";
 
+const isSingleValue = (value) => typeof value === "string";
+
 export const listUsersRules = [
   query("role")
     .optional()
-    .custom((value) => typeof value === "string")
+    .custom(isSingleValue)
     .withMessage("Role must be a single value")
     .isIn(["admin", "exhibitor", "attendee"])
     .withMessage("Role must be admin, exhibitor or attendee"),

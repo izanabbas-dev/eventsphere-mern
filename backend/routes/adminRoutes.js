@@ -6,7 +6,6 @@ import { listUsersRules, userStatusRules } from "../validators/adminValidator.js
 
 const router = express.Router();
 
-// All admin routes are for admin only
 router.use(protect, authorize("admin"));
 
 router.get("/users", listUsersRules, validate, getUsers);

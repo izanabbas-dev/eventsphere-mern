@@ -32,6 +32,7 @@ export const updateFeedbackRules = [
   param("id").isMongoId().withMessage("Invalid feedback id"),
   body("status").optional().isIn(statuses).withMessage(`Status must be one of: ${statuses.join(", ")}`),
   body("adminResponse").optional().isString().trim(),
-  body().custom((value) => value.status !== undefined || value.adminResponse !== undefined)
+  body()
+    .custom((value) => value.status !== undefined || value.adminResponse !== undefined)
     .withMessage("Send status or adminResponse"),
 ];

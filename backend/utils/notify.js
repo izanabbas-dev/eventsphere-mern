@@ -1,8 +1,7 @@
 import Notification from "../models/Notification.js";
 import { emitToUser } from "./socket.js";
 
-// Use these instead of Notification.create / insertMany, so the user also gets it in real time
-
+// Saves the notification and also sends it to the user in real time
 export const createNotification = async (data) => {
   const notification = await Notification.create(data);
   emitToUser(notification.user, "notification", notification);

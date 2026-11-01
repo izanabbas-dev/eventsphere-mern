@@ -21,6 +21,70 @@ const countBy = (Model, match, field) => {
   return Model.aggregate([{ $match: match }, { $group: { _id: `$${field}`, count: { $sum: 1 } } }]);
 };
 
+const getCount = (groups, id) => {
+  const group = groups.find((g) => g._id.equals(id));
+  return group ? group.count : 0;
+};
+
+const getAttendeesPerDay = (attendeeMatch) => {
+  return Registration.aggregate([
+    { $match: attendeeMatch },
+    { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+    { $sort: { _id: 1 } },
+    { $project: { _id: 0, date: "$_id", count: 1 } },
+  ]);
+};
+
+// 5 booths with the most visits
+const getTopBooths = (expoId) => {
+  return BoothVisit.aggregate([
+    { $match: { expo: expoId } },
+    { $group: { _id: "$booth", visits: { $sum: 1 } } },
+    { $sort: { visits: -1 } },
+    { $limit: 5 },
+    { $lookup: { from: "booths", localField: "_id", foreignField: "_id", as: "booth" } },
+    { $unwind: "$booth" },
+    { $project: { _id: 0, boothId: "$_id", boothNumber: "$booth.boothNumber", hall: "$booth.hall", visits: 1 } },
+  ]);
+};
+
+// 5 most popular sessions (registrations + bookmarks)
+const getTopSessions = async (expoId) => {
+  const registrationMatch = { expo: expoId, session: { $ne: null }, status: { $ne: "cancelled" } };
+  const sessionRegistrations = await countBy(Registration, registrationMatch, "session");
+  const sessionBookmarks = await countBy(Bookmark, { expo: expoId }, "session");
+  const sessions = await Session.find({ expo: expoId }).select("title startTime");
+
+  return sessions
+    .map((session) => {
+      const registrations = getCount(sessionRegistrations, session._id);
+      const bookmarks = getCount(sessionBookmarks, session._id);
+      return {
+        sessionId: session._id,
+        title: session.title,
+        startTime: session.startTime,
+        registrations,
+        bookmarks,
+        total: registrations + bookmarks,
+      };
+    })
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
+};
+
+const getFeedbackStats = async (expoId) => {
+  // $avg skips feedback without a rating
+  const stats = await Feedback.aggregate([
+    { $match: { expo: expoId } },
+    { $group: { _id: null, count: { $sum: 1 }, averageRating: { $avg: "$rating" } } },
+  ]);
+
+  if (stats.length === 0) return { count: 0, averageRating: null };
+
+  const average = stats[0].averageRating;
+  return { count: stats[0].count, averageRating: average ? Math.round(average * 10) / 10 : null };
+};
+
 // GET /api/analytics/expos/:expoId
 export const getExpoReport = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
@@ -36,70 +100,12 @@ export const getExpoReport = async (req, res) => {
   const attendeeMatch = { expo: expoId, session: null, status: { $ne: "cancelled" } };
 
   const totalAttendees = await Registration.countDocuments(attendeeMatch);
-
-  const attendeesPerDay = await Registration.aggregate([
-    { $match: attendeeMatch },
-    { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
-    { $sort: { _id: 1 } },
-    { $project: { _id: 0, date: "$_id", count: 1 } },
-  ]);
-
+  const attendeesPerDay = await getAttendeesPerDay(attendeeMatch);
   const boothGroups = await countBy(Booth, { expo: expoId }, "status");
   const applicationGroups = await countBy(ExhibitorApplication, { expo: expoId }, "status");
-
-  const topBooths = await BoothVisit.aggregate([
-    { $match: { expo: expoId } },
-    { $group: { _id: "$booth", visits: { $sum: 1 } } },
-    { $sort: { visits: -1 } },
-    { $limit: 5 },
-    { $lookup: { from: "booths", localField: "_id", foreignField: "_id", as: "booth" } },
-    { $unwind: "$booth" },
-    { $project: { _id: 0, boothId: "$_id", boothNumber: "$booth.boothNumber", hall: "$booth.hall", visits: 1 } },
-  ]);
-
-  // Session popularity = registrations + bookmarks
-  const sessionRegistrations = await countBy(
-    Registration,
-    { expo: expoId, session: { $ne: null }, status: { $ne: "cancelled" } },
-    "session"
-  );
-  const sessionBookmarks = await countBy(Bookmark, { expo: expoId }, "session");
-  const sessions = await Session.find({ expo: expoId }).select("title startTime");
-
-  const getCount = (groups, sessionId) => {
-    const group = groups.find((g) => g._id.equals(sessionId));
-    return group ? group.count : 0;
-  };
-
-  const topSessions = sessions
-    .map((session) => {
-      const registrations = getCount(sessionRegistrations, session._id);
-      const bookmarks = getCount(sessionBookmarks, session._id);
-      return {
-        sessionId: session._id,
-        title: session.title,
-        startTime: session.startTime,
-        registrations,
-        bookmarks,
-        total: registrations + bookmarks,
-      };
-    })
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 5);
-
-  // $avg skips feedback without a rating
-  const feedbackStats = await Feedback.aggregate([
-    { $match: { expo: expoId } },
-    { $group: { _id: null, count: { $sum: 1 }, averageRating: { $avg: "$rating" } } },
-  ]);
-
-  const feedback = {
-    count: feedbackStats.length ? feedbackStats[0].count : 0,
-    averageRating:
-      feedbackStats.length && feedbackStats[0].averageRating
-        ? Math.round(feedbackStats[0].averageRating * 10) / 10
-        : null,
-  };
+  const topBooths = await getTopBooths(expoId);
+  const topSessions = await getTopSessions(expoId);
+  const feedback = await getFeedbackStats(expoId);
 
   res.status(200).json({
     success: true,

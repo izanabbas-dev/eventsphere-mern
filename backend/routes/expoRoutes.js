@@ -38,15 +38,7 @@ router.post("/", protect, authorize("admin"), createExpoRules, validate, createE
 router.put("/:id", protect, authorize("admin"), updateExpoRules, validate, updateExpo);
 router.delete("/:id", protect, authorize("admin"), expoIdRules, validate, deleteExpo);
 router.patch("/:id/status", protect, authorize("admin"), updateStatusRules, validate, updateExpoStatus);
-router.post(
-  "/:id/banner",
-  protect,
-  authorize("admin"),
-  expoIdRules,
-  validate,
-  uploadImage.single("banner"),
-  uploadExpoBanner
-);
+router.post("/:id/banner", protect, authorize("admin"), expoIdRules, validate, uploadImage.single("banner"), uploadExpoBanner);
 
 // Booths of an expo (floor plan)
 router.get("/:expoId/booths", optionalAuth, listBoothRules, validate, getBooths);

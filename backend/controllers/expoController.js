@@ -10,6 +10,7 @@ import Message from "../models/Message.js";
 import { emitToExpo } from "../utils/socket.js";
 import { createNotifications } from "../utils/notify.js";
 import { getFileUrl, deleteFile } from "../middleware/upload.js";
+import { isAdmin, escapeRegex } from "../utils/helpers.js";
 
 const expoFields = ["title", "description", "theme", "startDate", "endDate", "location"];
 
@@ -22,7 +23,32 @@ const nextStatuses = {
   cancelled: [],
 };
 
-const isAdmin = (req) => req.user && req.user.role === "admin";
+// Tells registered attendees and exhibitors (applied or holding a booth) that the expo is removed
+const notifyExpoRemoved = async (expo) => {
+  const registrations = await Registration.find({ expo: expo._id, session: null, status: "registered" }).select("attendee");
+  const applications = await ExhibitorApplication.find({
+    expo: expo._id,
+    status: { $in: ["pending", "approved"] },
+  }).select("exhibitor");
+  const booths = await Booth.find({ expo: expo._id, exhibitor: { $ne: null } }).select("exhibitor");
+
+  const userIds = new Set([
+    ...registrations.map((registration) => registration.attendee.toString()),
+    ...applications.map((application) => application.exhibitor.toString()),
+    ...booths.map((booth) => booth.exhibitor.toString()),
+  ]);
+
+  if (userIds.size === 0) return;
+
+  await createNotifications(
+    [...userIds].map((userId) => ({
+      user: userId,
+      title: "Expo removed",
+      message: `"${expo.title}" has been removed by the organizer.`,
+      type: "system",
+    }))
+  );
+};
 
 // POST /api/expos
 export const createExpo = async (req, res) => {
@@ -59,11 +85,7 @@ export const getExpos = async (req, res) => {
     filter.status = { $ne: "draft" };
   }
 
-  if (search) {
-    // Escape special characters so the search text is matched as plain text
-    const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    filter.title = { $regex: safeSearch, $options: "i" };
-  }
+  if (search) filter.title = { $regex: escapeRegex(search), $options: "i" };
 
   const expos = await Expo.find(filter).sort({ startDate: 1 }).populate("organizer", "name");
 
@@ -99,7 +121,7 @@ export const updateExpo = async (req, res) => {
     if (req.body.floorPlan.cols !== undefined) expo.floorPlan.cols = req.body.floorPlan.cols;
   }
 
-  // save() runs the model checks, e.g. end date after start date
+  // save() also checks that the end date is after the start date
   await expo.save();
 
   emitToExpo(expo._id, "expo_updated", { expo });
@@ -115,30 +137,8 @@ export const deleteExpo = async (req, res) => {
     return res.status(404).json({ success: false, message: "Expo not found" });
   }
 
-  // Notify registered attendees and exhibitors (applied or holding a booth) before deleting
-  const registrations = await Registration.find({ expo: expo._id, session: null, status: "registered" }).select("attendee");
-  const applications = await ExhibitorApplication.find({
-    expo: expo._id,
-    status: { $in: ["pending", "approved"] },
-  }).select("exhibitor");
-  const booths = await Booth.find({ expo: expo._id, exhibitor: { $ne: null } }).select("exhibitor");
-
-  const userIds = new Set([
-    ...registrations.map((registration) => registration.attendee.toString()),
-    ...applications.map((application) => application.exhibitor.toString()),
-    ...booths.map((booth) => booth.exhibitor.toString()),
-  ]);
-
-  if (userIds.size > 0) {
-    await createNotifications(
-      [...userIds].map((userId) => ({
-        user: userId,
-        title: "Expo removed",
-        message: `"${expo.title}" has been removed by the organizer.`,
-        type: "system",
-      }))
-    );
-  }
+  // Notify first, because the registrations and booths are deleted below
+  await notifyExpoRemoved(expo);
 
   const conversations = await Conversation.find({ expo: expo._id }).select("_id");
   await Message.deleteMany({ conversation: { $in: conversations.map((c) => c._id) } });
@@ -155,7 +155,7 @@ export const deleteExpo = async (req, res) => {
 
   emitToExpo(expo._id, "expo_updated", { action: "deleted", expoId: expo._id });
 
-  res.status(200).json({ success: true, message: "Expo and all its data deleted" });
+  res.status(200).json({ success: true, message: "Expo deleted" });
 };
 
 // PATCH /api/expos/:id/status

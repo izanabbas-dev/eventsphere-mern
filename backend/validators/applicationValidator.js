@@ -2,6 +2,8 @@ import { body, param, query } from "express-validator";
 
 const statuses = ["pending", "approved", "rejected", "withdrawn"];
 
+const isSingleValue = (value) => typeof value === "string";
+
 const expoIdParamRules = [param("expoId").isMongoId().withMessage("Invalid expo id")];
 
 export const applicationIdRules = [param("id").isMongoId().withMessage("Invalid application id")];
@@ -22,7 +24,7 @@ export const listApplicationRules = [
   ...expoIdParamRules,
   query("status")
     .optional()
-    .custom((value) => typeof value === "string")
+    .custom(isSingleValue)
     .withMessage("Status must be a single value")
     .isIn(statuses)
     .withMessage("Invalid status"),

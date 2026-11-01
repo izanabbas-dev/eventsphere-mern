@@ -3,6 +3,8 @@ import { body, param, query } from "express-validator";
 const sizes = ["small", "medium", "large"];
 const statuses = ["available", "reserved", "booked"];
 
+const isSingleValue = (value) => typeof value === "string";
+
 export const expoIdParamRules = [param("expoId").isMongoId().withMessage("Invalid expo id")];
 
 export const boothIdRules = [param("id").isMongoId().withMessage("Invalid booth id")];
@@ -11,7 +13,7 @@ export const listBoothRules = [
   ...expoIdParamRules,
   query("status")
     .optional()
-    .custom((value) => typeof value === "string")
+    .custom(isSingleValue)
     .withMessage("Status must be a single value")
     .isIn(statuses)
     .withMessage("Invalid status"),

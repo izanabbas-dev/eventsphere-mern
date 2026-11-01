@@ -4,7 +4,7 @@ const statuses = ["draft", "published", "ongoing", "completed", "cancelled"];
 
 export const expoIdRules = [param("id").isMongoId().withMessage("Invalid expo id")];
 
-// Repeated params like ?status=a&status=b arrive as an array, so allow only a single value
+// ?status=a&status=b arrives as an array, so allow only one value
 const isSingleValue = (value) => typeof value === "string";
 
 export const listExpoRules = [

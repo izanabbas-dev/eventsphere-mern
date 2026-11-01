@@ -2,7 +2,7 @@ import Booth from "../models/Booth.js";
 import BoothVisit from "../models/BoothVisit.js";
 import { emitBoothUpdated } from "./socket.js";
 
-// Makes one booth available again and removes the exhibitor's booth details
+// Makes the booth available again and clears the exhibitor's details
 export const freeBooth = async (booth) => {
   booth.status = "available";
   booth.exhibitor = null;
@@ -19,6 +19,11 @@ export const freeExhibitorBooths = async (expoId, exhibitorId) => {
     await freeBooth(booth);
   }
   return booths;
+};
+
+// Any other booth this exhibitor already holds in the same expo
+export const findOtherBooth = (expoId, exhibitorId, boothId) => {
+  return Booth.findOne({ expo: expoId, exhibitor: exhibitorId, _id: { $ne: boothId } });
 };
 
 // Saves a booth visit, but only once per user per booth per hour.

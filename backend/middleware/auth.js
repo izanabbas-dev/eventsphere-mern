@@ -30,8 +30,7 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// For public routes: if a valid token is sent, set req.user.
-// No token, or a bad or expired token, means the user continues as a guest.
+// For public routes: sets req.user if a valid token is sent, otherwise continues as a guest
 export const optionalAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -47,7 +46,7 @@ export const optionalAuth = async (req, res, next) => {
       req.user = user;
     }
   } catch (error) {
-    // Bad or expired token, continue as a guest
+    // Bad token: continue as a guest
   }
 
   next();

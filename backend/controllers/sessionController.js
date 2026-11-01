@@ -4,14 +4,11 @@ import Registration from "../models/Registration.js";
 import Bookmark from "../models/Bookmark.js";
 import { createNotifications } from "../utils/notify.js";
 import { emitToExpo } from "../utils/socket.js";
-
-const isAdmin = (req) => req.user && req.user.role === "admin";
-
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+import { isAdmin, escapeRegex } from "../utils/helpers.js";
 
 const formatTime = (date) => date.toLocaleString("en-GB", { timeZone: "Asia/Karachi" });
 
-// Session times must be inside the expo days (from the start of the first day to the end of the last day)
+// Session must be inside the expo days (start of first day to end of last day)
 const getTimeError = (expo, startTime, endTime) => {
   if (endTime <= startTime) {
     return "End time must be after the start time";
@@ -203,13 +200,7 @@ export const updateSession = async (req, res) => {
       return res.status(400).json({ success: false, message: timeError });
     }
 
-    const overlapError = await getOverlapError(
-      session.expo,
-      session.location,
-      session.startTime,
-      session.endTime,
-      session._id
-    );
+    const overlapError = await getOverlapError(session.expo, session.location, session.startTime, session.endTime, session._id);
     if (overlapError) {
       return res.status(400).json({ success: false, message: overlapError });
     }
@@ -271,5 +262,5 @@ export const deleteSession = async (req, res) => {
 
   emitToExpo(session.expo, "schedule_updated", { action: "deleted", sessionId: session._id });
 
-  res.status(200).json({ success: true, message: "Session and its registrations and bookmarks deleted" });
+  res.status(200).json({ success: true, message: "Session deleted" });
 };
