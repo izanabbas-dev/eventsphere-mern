@@ -3,6 +3,7 @@ import {
   updateBooth,
   deleteBooth,
   assignBooth,
+  unassignBooth,
   reserveBooth,
   cancelReservation,
   updateBoothDetails,
@@ -25,6 +26,7 @@ const router = express.Router();
 router.put("/:id", protect, authorize("admin"), updateBoothRules, validate, updateBooth);
 router.delete("/:id", protect, authorize("admin"), boothIdRules, validate, deleteBooth);
 router.patch("/:id/assign", protect, authorize("admin"), assignBoothRules, validate, assignBooth);
+router.patch("/:id/unassign", protect, authorize("admin"), boothIdRules, validate, unassignBooth);
 
 router.post("/:id/reserve", protect, authorize("exhibitor"), boothIdRules, validate, reserveBooth);
 router.delete("/:id/reserve", protect, authorize("exhibitor"), boothIdRules, validate, cancelReservation);

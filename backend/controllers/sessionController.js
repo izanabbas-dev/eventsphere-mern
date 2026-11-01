@@ -82,6 +82,10 @@ export const createSession = async (req, res) => {
     return res.status(404).json({ success: false, message: "Expo not found" });
   }
 
+  if (["cancelled", "completed"].includes(expo.status)) {
+    return res.status(400).json({ success: false, message: `Sessions cannot be added to a ${expo.status} expo` });
+  }
+
   const { title, description, topic, type, speakers, location, capacity } = req.body;
   const startTime = new Date(req.body.startTime);
   const endTime = new Date(req.body.endTime);
@@ -167,6 +171,13 @@ export const updateSession = async (req, res) => {
 
   if (session.status === "cancelled") {
     return res.status(400).json({ success: false, message: "A cancelled session cannot be updated" });
+  }
+
+  if (req.body.capacity !== undefined && req.body.capacity < session.registeredCount) {
+    return res.status(400).json({
+      success: false,
+      message: `Capacity cannot be less than the ${session.registeredCount} people already registered`,
+    });
   }
 
   const oldStart = session.startTime.getTime();

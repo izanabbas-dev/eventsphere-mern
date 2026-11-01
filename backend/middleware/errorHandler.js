@@ -29,8 +29,10 @@ export const errorHandler = (err, req, res, next) => {
     message = Object.values(err.errors).map((e) => e.message).join(", ");
   }
 
-  if (statusCode === 500) {
+  // Server errors: log the real error here, but don't show its details to the client
+  if (statusCode >= 500) {
     console.error(err);
+    message = "Server error";
   }
 
   res.status(statusCode).json({ success: false, message });

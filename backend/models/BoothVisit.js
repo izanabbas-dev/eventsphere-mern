@@ -14,5 +14,8 @@ const boothVisitSchema = new mongoose.Schema(
 // Makes booth traffic reports faster
 boothVisitSchema.index({ expo: 1, booth: 1 });
 
+// Makes the "already visited in the last hour" check faster
+boothVisitSchema.index({ booth: 1, visitor: 1, createdAt: -1 });
+
 const BoothVisit = mongoose.model("BoothVisit", boothVisitSchema);
 export default BoothVisit;

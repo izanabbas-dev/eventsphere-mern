@@ -15,10 +15,12 @@ const exhibitorProfileSchema = new mongoose.Schema(
       phone: { type: String, trim: true },
       address: { type: String, trim: true },
     },
+    // Private files in the private_uploads folder.
+    // Download with GET /api/exhibitors/:id/documents/:docId
     documents: [
       {
         name: { type: String },
-        url: { type: String },
+        fileName: { type: String },
       },
     ],
   },

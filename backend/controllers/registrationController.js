@@ -73,6 +73,19 @@ export const registerForSession = async (req, res) => {
     return res.status(400).json({ success: false, message: "You are already registered for this session" });
   }
 
+  if (session.registeredCount >= session.capacity) {
+    return res.status(400).json({ success: false, message: "This session is full" });
+  }
+
+  // Save the registration first, then take a seat
+  const isNewRegistration = !registration;
+  if (isNewRegistration) {
+    registration = new Registration({ attendee: req.user._id, expo: session.expo, session: session._id });
+  }
+
+  registration.status = "registered";
+  await registration.save();
+
   // Take a seat only if there is still space, in one step so two people cannot take the last seat
   const updatedSession = await Session.findOneAndUpdate(
     { _id: session._id, status: "scheduled", $expr: { $lt: ["$registeredCount", "$capacity"] } },
@@ -80,16 +93,16 @@ export const registerForSession = async (req, res) => {
     { returnDocument: "after" }
   );
 
+  // Someone took the last seat at the same time, so undo the registration
   if (!updatedSession) {
+    if (isNewRegistration) {
+      await registration.deleteOne();
+    } else {
+      registration.status = "cancelled";
+      await registration.save();
+    }
     return res.status(400).json({ success: false, message: "This session is full" });
   }
-
-  if (!registration) {
-    registration = new Registration({ attendee: req.user._id, expo: session.expo, session: session._id });
-  }
-
-  registration.status = "registered";
-  await registration.save();
 
   res.status(201).json({
     success: true,

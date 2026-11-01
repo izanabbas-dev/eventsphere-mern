@@ -30,12 +30,26 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// For public routes: if a token is sent, check it and set req.user, otherwise continue as a guest
-export const optionalAuth = (req, res, next) => {
+// For public routes: if a valid token is sent, set req.user.
+// No token, or a bad or expired token, means the user continues as a guest.
+export const optionalAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return protect(req, res, next);
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return next();
   }
+
+  try {
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("+passwordChangedAt");
+
+    if (user && user.isActive && !user.changedPasswordAfter(decoded.iat)) {
+      req.user = user;
+    }
+  } catch (error) {
+    // Bad or expired token, continue as a guest
+  }
+
   next();
 };
 

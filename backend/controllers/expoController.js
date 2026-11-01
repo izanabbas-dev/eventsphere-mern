@@ -2,10 +2,25 @@ import Expo from "../models/Expo.js";
 import Booth from "../models/Booth.js";
 import Session from "../models/Session.js";
 import ExhibitorApplication from "../models/ExhibitorApplication.js";
+import Registration from "../models/Registration.js";
+import Bookmark from "../models/Bookmark.js";
+import BoothVisit from "../models/BoothVisit.js";
+import Conversation from "../models/Conversation.js";
+import Message from "../models/Message.js";
 import { emitToExpo } from "../utils/socket.js";
+import { createNotifications } from "../utils/notify.js";
 import { getFileUrl, deleteFile } from "../middleware/upload.js";
 
 const expoFields = ["title", "description", "theme", "startDate", "endDate", "location"];
+
+// Which status an expo can move to from its current status
+const nextStatuses = {
+  draft: ["published", "cancelled"],
+  published: ["ongoing", "cancelled"],
+  ongoing: ["completed", "cancelled"],
+  completed: ["cancelled"],
+  cancelled: [],
+};
 
 const isAdmin = (req) => req.user && req.user.role === "admin";
 
@@ -100,12 +115,47 @@ export const deleteExpo = async (req, res) => {
     return res.status(404).json({ success: false, message: "Expo not found" });
   }
 
+  // Notify registered attendees and exhibitors (applied or holding a booth) before deleting
+  const registrations = await Registration.find({ expo: expo._id, session: null, status: "registered" }).select("attendee");
+  const applications = await ExhibitorApplication.find({
+    expo: expo._id,
+    status: { $in: ["pending", "approved"] },
+  }).select("exhibitor");
+  const booths = await Booth.find({ expo: expo._id, exhibitor: { $ne: null } }).select("exhibitor");
+
+  const userIds = new Set([
+    ...registrations.map((registration) => registration.attendee.toString()),
+    ...applications.map((application) => application.exhibitor.toString()),
+    ...booths.map((booth) => booth.exhibitor.toString()),
+  ]);
+
+  if (userIds.size > 0) {
+    await createNotifications(
+      [...userIds].map((userId) => ({
+        user: userId,
+        title: "Expo removed",
+        message: `"${expo.title}" has been removed by the organizer.`,
+        type: "system",
+      }))
+    );
+  }
+
+  const conversations = await Conversation.find({ expo: expo._id }).select("_id");
+  await Message.deleteMany({ conversation: { $in: conversations.map((c) => c._id) } });
+  await Conversation.deleteMany({ expo: expo._id });
+
+  await Registration.deleteMany({ expo: expo._id });
+  await Bookmark.deleteMany({ expo: expo._id });
+  await BoothVisit.deleteMany({ expo: expo._id });
+  await ExhibitorApplication.deleteMany({ expo: expo._id });
   await Booth.deleteMany({ expo: expo._id });
   await Session.deleteMany({ expo: expo._id });
-  await ExhibitorApplication.deleteMany({ expo: expo._id });
   await expo.deleteOne();
+  await deleteFile(expo.banner);
 
-  res.status(200).json({ success: true, message: "Expo and its booths, sessions and applications deleted" });
+  emitToExpo(expo._id, "expo_updated", { action: "deleted", expoId: expo._id });
+
+  res.status(200).json({ success: true, message: "Expo and all its data deleted" });
 };
 
 // PATCH /api/expos/:id/status
@@ -116,7 +166,16 @@ export const updateExpoStatus = async (req, res) => {
     return res.status(404).json({ success: false, message: "Expo not found" });
   }
 
-  expo.status = req.body.status;
+  const newStatus = req.body.status;
+
+  if (!nextStatuses[expo.status].includes(newStatus)) {
+    return res.status(400).json({
+      success: false,
+      message: `Status cannot change from ${expo.status} to ${newStatus}`,
+    });
+  }
+
+  expo.status = newStatus;
   await expo.save();
 
   emitToExpo(expo._id, "expo_updated", { expo });

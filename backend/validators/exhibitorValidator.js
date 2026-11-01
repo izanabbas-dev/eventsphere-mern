@@ -18,9 +18,15 @@ export const exhibitorProfileRules = [
     .withMessage("Invalid expo id"),
 ];
 
+export const deleteDocumentRules = [param("docId").isMongoId().withMessage("Invalid document id")];
+
+export const downloadDocumentRules = [
+  param("id").isMongoId().withMessage("Invalid exhibitor id"),
+  ...deleteDocumentRules,
+];
+
 export const updateProfileRules = [
   body("companyName").optional().trim().notEmpty().withMessage("Company name cannot be empty"),
-  body("logo").optional().isString().trim(),
   body("description").optional().isString().trim(),
   body("category").optional().isString().trim(),
   body("website").optional().isString().trim(),

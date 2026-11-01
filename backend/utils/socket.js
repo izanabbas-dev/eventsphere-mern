@@ -27,8 +27,8 @@ const socketAuth = async (socket, next) => {
 };
 
 export const initSocket = (httpServer) => {
-  // Same as app.use(cors()) in app.js, which allows every origin
-  io = new Server(httpServer, { cors: { origin: "*" } });
+  // Same rule as cors in app.js: only our frontend can connect
+  io = new Server(httpServer, { cors: { origin: process.env.CLIENT_URL || "http://localhost:5173" } });
 
   io.use(socketAuth);
 
@@ -71,12 +71,23 @@ export const emitToExpo = (expoId, event, data) => {
   if (io) io.to(`expo_${expoId}`).emit(event, data);
 };
 
-// Only public fields are sent, because staff phone numbers are private
-export const emitBoothUpdated = (booth) => {
+// action is "created", "updated" or "deleted".
+// Only public fields are sent, because staff phone numbers are private.
+export const emitBoothUpdated = (booth, action = "updated") => {
   emitToExpo(booth.expo, "booth_updated", {
+    action,
     boothId: booth._id,
     boothNumber: booth.boothNumber,
+    hall: booth.hall,
+    position: booth.position,
+    size: booth.size,
+    price: booth.price,
     status: booth.status,
     exhibitor: booth.exhibitor,
   });
+};
+
+// Closes the live connections of a user, e.g. when an admin disables the account
+export const disconnectUser = (userId) => {
+  if (io) io.in(userId.toString()).disconnectSockets(true);
 };

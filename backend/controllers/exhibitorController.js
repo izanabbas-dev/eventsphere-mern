@@ -1,16 +1,18 @@
+import path from "path";
 import ExhibitorProfile from "../models/ExhibitorProfile.js";
 import ExhibitorApplication from "../models/ExhibitorApplication.js";
 import Booth from "../models/Booth.js";
-import BoothVisit from "../models/BoothVisit.js";
 import Expo from "../models/Expo.js";
 import User from "../models/User.js";
-import { getFileUrl, deleteFile } from "../middleware/upload.js";
+import { getFileUrl, deleteFile, deletePrivateFile, PRIVATE_FOLDER } from "../middleware/upload.js";
+import { saveBoothVisit } from "../utils/boothHelpers.js";
 
 const isAdmin = (req) => req.user && req.user.role === "admin";
 
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const profileFields = ["companyName", "logo", "description", "category", "website", "productsServices"];
+// Logo is changed with POST /api/exhibitors/profile/logo, not here
+const profileFields = ["companyName", "description", "category", "website", "productsServices"];
 const contactFields = ["person", "email", "phone", "address"];
 
 // PUT /api/exhibitors/profile
@@ -111,7 +113,7 @@ export const getExhibitorProfile = async (req, res) => {
 
     // Count this view as a booth visit when an attendee opens the profile
     if (booth && req.user && req.user.role === "attendee") {
-      await BoothVisit.create({ booth: booth._id, expo: expo._id, visitor: req.user._id, source: "profile_view" });
+      await saveBoothVisit(booth._id, expo._id, req.user._id, "profile_view");
     }
   }
 
@@ -127,14 +129,14 @@ export const uploadLogo = async (req, res) => {
   const profile = await ExhibitorProfile.findOne({ user: req.user._id });
 
   if (!profile) {
-    await deleteFile(getFileUrl(req.file));
+    await deleteFile(getFileUrl(req.file), req.user._id);
     return res.status(404).json({ success: false, message: "Exhibitor profile not found" });
   }
 
   const oldLogo = profile.logo;
   profile.logo = getFileUrl(req.file);
   await profile.save();
-  await deleteFile(oldLogo);
+  await deleteFile(oldLogo, req.user._id);
 
   res.status(200).json({ success: true, message: "Logo uploaded", logo: profile.logo });
 };
@@ -148,14 +150,53 @@ export const uploadDocuments = async (req, res) => {
   const profile = await ExhibitorProfile.findOne({ user: req.user._id });
 
   if (!profile) {
-    for (const file of req.files) await deleteFile(getFileUrl(file));
+    for (const file of req.files) await deletePrivateFile(file.filename);
     return res.status(404).json({ success: false, message: "Exhibitor profile not found" });
   }
 
   req.files.forEach((file) => {
-    profile.documents.push({ name: file.originalname, url: getFileUrl(file) });
+    profile.documents.push({ name: file.originalname, fileName: file.filename });
   });
   await profile.save();
 
   res.status(200).json({ success: true, message: "Documents uploaded", documents: profile.documents });
+};
+
+// GET /api/exhibitors/:id/documents/:docId
+// :id is the exhibitor's user id. Only that exhibitor or an admin can download.
+export const downloadDocument = async (req, res) => {
+  if (!isAdmin(req) && !req.user._id.equals(req.params.id)) {
+    return res.status(403).json({ success: false, message: "You cannot download this document" });
+  }
+
+  const profile = await ExhibitorProfile.findOne({ user: req.params.id });
+  const document = profile && profile.documents.id(req.params.docId);
+
+  if (!document || !document.fileName) {
+    return res.status(404).json({ success: false, message: "Document not found" });
+  }
+
+  const filePath = path.resolve(PRIVATE_FOLDER, path.basename(document.fileName));
+  res.download(filePath, document.name, (error) => {
+    if (error && !res.headersSent) {
+      res.status(404).json({ success: false, message: "File is missing on the server" });
+    }
+  });
+};
+
+// DELETE /api/exhibitors/profile/documents/:docId
+export const deleteDocument = async (req, res) => {
+  const profile = await ExhibitorProfile.findOne({ user: req.user._id });
+  const document = profile && profile.documents.id(req.params.docId);
+
+  if (!document) {
+    return res.status(404).json({ success: false, message: "Document not found" });
+  }
+
+  const fileName = document.fileName;
+  document.deleteOne();
+  await profile.save();
+  await deletePrivateFile(fileName);
+
+  res.status(200).json({ success: true, message: "Document deleted", documents: profile.documents });
 };

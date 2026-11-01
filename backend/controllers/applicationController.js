@@ -4,6 +4,7 @@ import Expo from "../models/Expo.js";
 import Booth from "../models/Booth.js";
 import { createNotification } from "../utils/notify.js";
 import { emitBoothUpdated } from "../utils/socket.js";
+import { freeExhibitorBooths } from "../utils/boothHelpers.js";
 
 const notifyExhibitor = (exhibitorId, title, message) => {
   return createNotification({
@@ -79,14 +80,11 @@ export const withdrawApplication = async (req, res) => {
     return res.status(400).json({ success: false, message: "Only a pending application can be withdrawn" });
   }
 
-  if (application.assignedBooth) {
-    return res.status(400).json({
-      success: false,
-      message: "A booth is already assigned to you. Please contact the admin to withdraw.",
-    });
-  }
+  // Booths reserved by or assigned to this exhibitor in this expo become available again
+  await freeExhibitorBooths(application.expo, application.exhibitor);
 
   application.status = "withdrawn";
+  application.assignedBooth = null;
   await application.save();
 
   res.status(200).json({ success: true, message: "Application withdrawn", application });
@@ -200,8 +198,11 @@ export const rejectApplication = async (req, res) => {
     return res.status(400).json({ success: false, message: "Only a pending application can be rejected" });
   }
 
+  await freeExhibitorBooths(application.expo._id, application.exhibitor);
+
   application.status = "rejected";
   application.adminNote = req.body.adminNote;
+  application.assignedBooth = null;
   await application.save();
 
   await notifyExhibitor(

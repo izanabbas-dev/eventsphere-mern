@@ -3,8 +3,9 @@ import Expo from "../models/Expo.js";
 import User from "../models/User.js";
 import ExhibitorProfile from "../models/ExhibitorProfile.js";
 import ExhibitorApplication from "../models/ExhibitorApplication.js";
-import BoothVisit from "../models/BoothVisit.js";
 import { emitBoothUpdated } from "../utils/socket.js";
+import { createNotification } from "../utils/notify.js";
+import { freeBooth, saveBoothVisit } from "../utils/boothHelpers.js";
 
 const isAdmin = (req) => req.user && req.user.role === "admin";
 
@@ -59,6 +60,8 @@ export const createBooth = async (req, res) => {
     size,
     price,
   });
+
+  emitBoothUpdated(booth, "created");
 
   res.status(201).json({ success: true, message: "Booth created", booth });
 };
@@ -132,6 +135,7 @@ export const updateBooth = async (req, res) => {
   if (price !== undefined) booth.price = price;
 
   await booth.save();
+  emitBoothUpdated(booth);
 
   res.status(200).json({ success: true, message: "Booth updated", booth });
 };
@@ -149,6 +153,18 @@ export const deleteBooth = async (req, res) => {
   }
 
   await booth.deleteOne();
+  emitBoothUpdated(booth, "deleted");
+
+  // Tell the exhibitor that their reservation is gone
+  if (booth.status === "reserved" && booth.exhibitor) {
+    await createNotification({
+      user: booth.exhibitor,
+      title: "Booth reservation removed",
+      message: `Booth ${booth.boothNumber} was removed by the organizer. Please reserve another booth.`,
+      type: "info",
+      link: `/expos/${booth.expo}`,
+    });
+  }
 
   res.status(200).json({ success: true, message: "Booth deleted" });
 };
@@ -196,6 +212,38 @@ export const assignBooth = async (req, res) => {
   );
 
   res.status(200).json({ success: true, message: `Booth assigned to ${exhibitor.name}`, booth });
+};
+
+// PATCH /api/booths/:id/unassign
+// Admin makes a booked or reserved booth available again
+export const unassignBooth = async (req, res) => {
+  const booth = await Booth.findById(req.params.id);
+
+  if (!booth) {
+    return res.status(404).json({ success: false, message: "Booth not found" });
+  }
+
+  if (booth.status === "available" || !booth.exhibitor) {
+    return res.status(400).json({ success: false, message: "Booth is already available" });
+  }
+
+  const exhibitorId = booth.exhibitor;
+  await freeBooth(booth);
+
+  await ExhibitorApplication.updateOne(
+    { expo: booth.expo, exhibitor: exhibitorId, assignedBooth: booth._id },
+    { assignedBooth: null }
+  );
+
+  await createNotification({
+    user: exhibitorId,
+    title: "Booth unassigned",
+    message: `Booth ${booth.boothNumber} is no longer assigned to you. Please contact the organizer for details.`,
+    type: "application",
+    link: "/applications/my",
+  });
+
+  res.status(200).json({ success: true, message: "Booth is available again", booth });
 };
 
 // POST /api/booths/:id/reserve
@@ -249,12 +297,7 @@ export const cancelReservation = async (req, res) => {
     return res.status(400).json({ success: false, message: "You do not have a reservation on this booth" });
   }
 
-  booth.status = "available";
-  booth.exhibitor = null;
-  booth.productsShowcased = [];
-  booth.staff = [];
-  await booth.save();
-  emitBoothUpdated(booth);
+  await freeBooth(booth);
 
   res.status(200).json({ success: true, message: "Reservation cancelled", booth });
 };
@@ -287,7 +330,7 @@ export const updateBoothDetails = async (req, res) => {
 };
 
 // POST /api/booths/:id/visit
-// Saves one visit so booth traffic can be shown in the analytics report
+// Saves one visit so booth traffic can be shown in the analytics report (once per user per booth per hour)
 export const recordBoothVisit = async (req, res) => {
   const booth = await Booth.findById(req.params.id).populate("expo", "status");
 
@@ -295,12 +338,11 @@ export const recordBoothVisit = async (req, res) => {
     return res.status(404).json({ success: false, message: "Booth not found" });
   }
 
-  const visit = await BoothVisit.create({
-    booth: booth._id,
-    expo: booth.expo._id,
-    visitor: req.user._id,
-    source: req.body.source || "floor_plan",
-  });
+  const visit = await saveBoothVisit(booth._id, booth.expo._id, req.user._id, req.body.source || "floor_plan");
+
+  if (!visit) {
+    return res.status(200).json({ success: true, message: "Visit already counted in the last hour" });
+  }
 
   res.status(201).json({ success: true, message: "Visit recorded", visit });
 };

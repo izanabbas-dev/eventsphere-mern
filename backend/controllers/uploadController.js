@@ -10,7 +10,7 @@ export const uploadAvatar = async (req, res) => {
 
   req.user.avatar = getFileUrl(req.file);
   await req.user.save();
-  await deleteFile(oldAvatar);
+  await deleteFile(oldAvatar, req.user._id);
 
   res.status(200).json({ success: true, message: "Avatar uploaded", avatar: req.user.avatar });
 };

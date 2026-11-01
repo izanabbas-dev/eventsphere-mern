@@ -4,3 +4,5 @@ uploads/*
 !uploads/.gitkeep
 CLAUDE.md
 MERN-EventSphere_Management.docx
+private_uploads/*
+!private_uploads/.gitkeep

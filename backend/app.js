@@ -15,13 +15,15 @@ import conversationRoutes from "./routes/conversationRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
 // cross-origin lets the frontend (on another port) show uploaded images
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
-app.use(cors());
+// Only our frontend (CLIENT_URL in .env) can call the API from the browser
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(morgan("dev"));
 app.use(express.json());
 
@@ -45,6 +47,7 @@ app.use("/api/conversations", conversationRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/admin", adminRoutes);
 
 // These two must stay at the end
 app.use(notFound);

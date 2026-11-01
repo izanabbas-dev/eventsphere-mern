@@ -70,14 +70,13 @@ export const getMe = async (req, res) => {
 };
 
 // PUT /api/auth/me
-// Only name, phone and avatar can be changed here (not email or role)
+// Only name and phone can be changed here. Avatar is changed with POST /api/uploads/avatar.
 export const updateMe = async (req, res) => {
-  const { name, phone, avatar } = req.body;
+  const { name, phone } = req.body;
   const user = req.user;
 
   if (name !== undefined) user.name = name;
   if (phone !== undefined) user.phone = phone;
-  if (avatar !== undefined) user.avatar = avatar;
 
   await user.save();
 
@@ -107,11 +106,11 @@ export const forgotPassword = async (req, res) => {
       text: `Hello ${user.name},\n\nClick the link below to reset your password. It is valid for 15 minutes.\n\n${resetUrl}\n\nIf you did not ask for this, ignore this email.`,
     });
   } catch (error) {
+    // Log it, but send the same reply, so nobody can check which emails exist
+    console.error("Email error:", error.message);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save({ validateBeforeSave: false });
-    console.error("Email error:", error.message);
-    return res.status(500).json({ success: false, message: "Email could not be sent" });
   }
 
   res.status(200).json({ success: true, message });
