@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-modal-in: modal-in 180ms ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.97);
+    }
+  }
+}
+
+/* Thin, light scrollbar inside modals */
+.modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-slate-300) transparent;
+}
+.modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-slate-300);
+  border-radius: 9999px;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 antialiased;
+}
+
+/* Clear focus ring for keyboard users on every link and button */
+a:focus-visible,
+button:focus-visible {
+  @apply outline-2 outline-offset-2 outline-indigo-600;
+}

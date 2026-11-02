@@ -1,0 +1,86 @@
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { CalendarDays, ExternalLink } from "lucide-react";
+import toast from "react-hot-toast";
+import PageHeader from "../PageHeader";
+import Card from "../ui/Card";
+import Button from "../ui/Button";
+import Badge from "../ui/Badge";
+import Select from "../ui/Select";
+import Spinner from "../ui/Spinner";
+import EmptyState from "../ui/EmptyState";
+import api from "../../api/axios";
+import { useExpoRoom } from "../../context/useSocket";
+import { getErrorMessage } from "../../utils/helpers";
+
+// Admin page with an expo selector at the top. The chosen expo is kept in the URL (?expo=123).
+// children is a function that gets the selected expo: {(expo) => <FloorPlan expoId={expo._id} />}
+export default function ExpoPickerPage({ title, subtitle, emptyMessage, children }) {
+  const [expos, setExpos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    api
+      .get("/expos")
+      .then((res) => setExpos(res.data.expos))
+      .catch((error) => toast.error(getErrorMessage(error)))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const selectedId = searchParams.get("expo") || expos[0]?._id || "";
+  const selectedExpo = expos.find((expo) => expo._id === selectedId);
+
+  // Live updates for the chosen expo
+  useExpoRoom(selectedExpo ? selectedId : null);
+
+  if (loading) return <Spinner fullPage />;
+
+  return (
+    <>
+      <PageHeader title={title} subtitle={subtitle} />
+
+      {expos.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={CalendarDays}
+            title="No expos yet"
+            message={emptyMessage}
+            action={<Button to="/admin/expos">Go to expos</Button>}
+          />
+        </Card>
+      ) : (
+        <>
+          <Card className="mb-6 p-4!">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+              <Select
+                label="Expo"
+                name="expo"
+                options={expos.map((expo) => ({ value: expo._id, label: expo.title }))}
+                value={selectedId}
+                onChange={(e) => setSearchParams({ expo: e.target.value })}
+                className="flex-1 sm:max-w-md"
+              />
+              {selectedExpo && (
+                <div className="flex items-center gap-3">
+                  <Badge status={selectedExpo.status} />
+                  <Button to={`/admin/expos/${selectedExpo._id}`} variant="secondary" size="sm">
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" /> Open expo
+                  </Button>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {selectedExpo ? (
+            <div key={selectedId}>{children(selectedExpo)}</div>
+          ) : (
+            <Card>
+              <EmptyState title="Expo not found" message="Please choose an expo from the list." />
+            </Card>
+          )}
+        </>
+      )}
+    </>
+  );
+}
