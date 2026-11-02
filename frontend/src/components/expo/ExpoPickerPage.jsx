@@ -13,20 +13,23 @@ import api from "../../api/axios";
 import { useExpoRoom } from "../../context/useSocket";
 import { getErrorMessage } from "../../utils/helpers";
 
-// Admin page with an expo selector at the top. The chosen expo is kept in the URL (?expo=123).
+// Page with an expo selector at the top. The chosen expo is kept in the URL (?expo=123).
 // children is a function that gets the selected expo: {(expo) => <FloorPlan expoId={expo._id} />}
-export default function ExpoPickerPage({ title, subtitle, emptyMessage, children }) {
-  const [expos, setExpos] = useState([]);
+// basePath is "/admin" or "/attendee" (used for the links). Expos with a status in hideStatuses are not shown.
+export default function ExpoPickerPage({ title, subtitle, emptyMessage, basePath = "/admin", hideStatuses = [], children }) {
+  const [allExpos, setAllExpos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     api
       .get("/expos")
-      .then((res) => setExpos(res.data.expos))
+      .then((res) => setAllExpos(res.data.expos))
       .catch((error) => toast.error(getErrorMessage(error)))
       .finally(() => setLoading(false));
   }, []);
+
+  const expos = allExpos.filter((expo) => !hideStatuses.includes(expo.status));
 
   const selectedId = searchParams.get("expo") || expos[0]?._id || "";
   const selectedExpo = expos.find((expo) => expo._id === selectedId);
@@ -46,7 +49,7 @@ export default function ExpoPickerPage({ title, subtitle, emptyMessage, children
             icon={CalendarDays}
             title="No expos yet"
             message={emptyMessage}
-            action={<Button to="/admin/expos">Go to expos</Button>}
+            action={<Button to={`${basePath}/expos`}>Go to expos</Button>}
           />
         </Card>
       ) : (
@@ -64,7 +67,7 @@ export default function ExpoPickerPage({ title, subtitle, emptyMessage, children
               {selectedExpo && (
                 <div className="flex items-center gap-3">
                   <Badge status={selectedExpo.status} />
-                  <Button to={`/admin/expos/${selectedExpo._id}`} variant="secondary" size="sm">
+                  <Button to={`${basePath}/expos/${selectedExpo._id}`} variant="secondary" size="sm">
                     <ExternalLink className="h-4 w-4" aria-hidden="true" /> Open expo
                   </Button>
                 </div>

@@ -23,6 +23,7 @@ const navLinks = {
     { to: "/admin/applications", label: "Applications", icon: FileText },
     { to: "/admin/sessions", label: "Sessions", icon: CalendarClock },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    { to: "/admin/messages", label: "Messages", icon: MessageSquare },
     { to: "/admin/feedback", label: "Feedback", icon: MessageSquareText },
     { to: "/admin/users", label: "Users", icon: Users },
   ],
@@ -33,6 +34,7 @@ const navLinks = {
     { to: "/exhibitor/booth", label: "My Booth", icon: Store },
     { to: "/exhibitor/applications", label: "My Applications", icon: ClipboardList },
     { to: "/exhibitor/messages", label: "Messages", icon: MessageSquare },
+    { to: "/exhibitor/feedback", label: "Feedback", icon: MessageSquareText },
   ],
   attendee: [
     { to: "/attendee", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -42,6 +44,7 @@ const navLinks = {
     { to: "/attendee/registrations", label: "My Registrations", icon: Ticket },
     { to: "/attendee/bookmarks", label: "Bookmarks", icon: Bookmark },
     { to: "/attendee/messages", label: "Messages", icon: MessageSquare },
+    { to: "/attendee/feedback", label: "Feedback", icon: MessageSquareText },
   ],
 };
 

@@ -76,11 +76,7 @@ export const getBooths = async (req, res) => {
   const filter = { expo: expo._id };
   if (req.query.status) filter.status = req.query.status;
 
-  // Staff phone numbers are private, so only admins see them here
-  const hiddenFields = isAdmin(req) ? "" : "-staff";
-
   const booths = await Booth.find(filter)
-    .select(hiddenFields)
     .sort({ "position.row": 1, "position.col": 1 })
     .populate("exhibitor", "name")
     .lean();
@@ -92,6 +88,10 @@ export const getBooths = async (req, res) => {
   booths.forEach((booth) => {
     const profile = booth.exhibitor && profiles.find((p) => p.user.equals(booth.exhibitor._id));
     booth.companyName = profile ? profile.companyName : null;
+
+    // Staff phone numbers are private: only admins and the booth owner see them
+    const isOwner = req.user && booth.exhibitor && booth.exhibitor._id.equals(req.user._id);
+    if (!isAdmin(req) && !isOwner) delete booth.staff;
   });
 
   res.status(200).json({ success: true, count: booths.length, floorPlan: expo.floorPlan, booths });

@@ -39,6 +39,11 @@ export function AuthProvider({ children }) {
     return res.data.user;
   }
 
+  // After a profile change: merge the new fields into the user
+  function updateUser(fields) {
+    setUser((oldUser) => ({ ...oldUser, ...fields }));
+  }
+
   function logout() {
     localStorage.removeItem("token");
     setToken(null);
@@ -46,7 +51,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, saveSession, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

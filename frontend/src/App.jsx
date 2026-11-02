@@ -7,7 +7,6 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
-import PlaceholderPage from "./pages/PlaceholderPage";
 import AdminExpos from "./pages/admin/Expos";
 import ExpoDetail from "./pages/admin/ExpoDetail";
 import AdminBooths from "./pages/admin/Booths";
@@ -17,36 +16,25 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminUsers from "./pages/admin/Users";
 import AdminFeedback from "./pages/admin/Feedback";
+import ExhibitorDashboard from "./pages/exhibitor/Dashboard";
+import ExhibitorProfile from "./pages/exhibitor/Profile";
+import ExhibitorExpos from "./pages/exhibitor/Expos";
+import ExhibitorExpoDetail from "./pages/exhibitor/ExpoDetail";
+import MyBooth from "./pages/exhibitor/MyBooth";
+import ExhibitorApplications from "./pages/exhibitor/Applications";
+import AttendeeDashboard from "./pages/attendee/Dashboard";
+import AttendeeExpos from "./pages/attendee/Expos";
+import AttendeeExpoDetail from "./pages/attendee/ExpoDetail";
+import AttendeeExhibitorProfile from "./pages/attendee/ExhibitorProfile";
+import AttendeeSchedulePage from "./pages/attendee/Schedule";
+import AttendeeExhibitors from "./pages/attendee/Exhibitors";
+import AttendeeRegistrations from "./pages/attendee/Registrations";
+import AttendeeBookmarks from "./pages/attendee/Bookmarks";
+import Messages from "./pages/common/Messages";
+import Notifications from "./pages/common/Notifications";
+import Profile from "./pages/common/Profile";
+import MyFeedback from "./pages/common/MyFeedback";
 import NotFound from "./pages/NotFound";
-
-// Placeholder pages for now: [path, title]
-const exhibitorPages = [
-  ["/exhibitor", "Exhibitor Dashboard"],
-  ["/exhibitor/profile", "My Profile"],
-  ["/exhibitor/expos", "Expos"],
-  ["/exhibitor/booth", "My Booth"],
-  ["/exhibitor/applications", "My Applications"],
-  ["/exhibitor/messages", "Messages"],
-];
-
-const attendeePages = [
-  ["/attendee", "Attendee Dashboard"],
-  ["/attendee/expos", "Expos"],
-  ["/attendee/schedule", "Schedule"],
-  ["/attendee/exhibitors", "Exhibitors"],
-  ["/attendee/registrations", "My Registrations"],
-  ["/attendee/bookmarks", "Bookmarks"],
-  ["/attendee/messages", "Messages"],
-];
-
-const commonPages = [
-  ["/profile", "Profile"],
-  ["/notifications", "Notifications"],
-];
-
-function renderPages(pages) {
-  return pages.map(([path, title]) => <Route key={path} path={path} element={<PlaceholderPage title={title} />} />);
-}
 
 export default function App() {
   return (
@@ -72,10 +60,32 @@ export default function App() {
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/feedback" element={<AdminFeedback />} />
+            <Route path="/admin/messages" element={<Messages />} />
           </Route>
-          <Route element={<ProtectedRoute roles={["exhibitor"]} />}>{renderPages(exhibitorPages)}</Route>
-          <Route element={<ProtectedRoute roles={["attendee"]} />}>{renderPages(attendeePages)}</Route>
-          {renderPages(commonPages)}
+          <Route element={<ProtectedRoute roles={["exhibitor"]} />}>
+            <Route path="/exhibitor" element={<ExhibitorDashboard />} />
+            <Route path="/exhibitor/profile" element={<ExhibitorProfile />} />
+            <Route path="/exhibitor/expos" element={<ExhibitorExpos />} />
+            <Route path="/exhibitor/expos/:id" element={<ExhibitorExpoDetail />} />
+            <Route path="/exhibitor/booth" element={<MyBooth />} />
+            <Route path="/exhibitor/applications" element={<ExhibitorApplications />} />
+            <Route path="/exhibitor/messages" element={<Messages />} />
+            <Route path="/exhibitor/feedback" element={<MyFeedback />} />
+          </Route>
+          <Route element={<ProtectedRoute roles={["attendee"]} />}>
+            <Route path="/attendee" element={<AttendeeDashboard />} />
+            <Route path="/attendee/expos" element={<AttendeeExpos />} />
+            <Route path="/attendee/expos/:id" element={<AttendeeExpoDetail />} />
+            <Route path="/attendee/schedule" element={<AttendeeSchedulePage />} />
+            <Route path="/attendee/exhibitors" element={<AttendeeExhibitors />} />
+            <Route path="/attendee/exhibitors/:id" element={<AttendeeExhibitorProfile />} />
+            <Route path="/attendee/registrations" element={<AttendeeRegistrations />} />
+            <Route path="/attendee/bookmarks" element={<AttendeeBookmarks />} />
+            <Route path="/attendee/messages" element={<Messages />} />
+            <Route path="/attendee/feedback" element={<MyFeedback />} />
+          </Route>
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
       </Route>
 

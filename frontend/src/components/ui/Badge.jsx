@@ -20,6 +20,9 @@ const statusColors = {
   available: "green",
   reserved: "amber",
   booked: "indigo",
+  // Registration status
+  registered: "green",
+  attended: "indigo",
   // Feedback status
   open: "amber",
   in_progress: "indigo",

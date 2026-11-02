@@ -4,27 +4,29 @@ import toast from "react-hot-toast";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
-import Input from "../ui/Input";
-import Select from "../ui/Select";
 import Spinner from "../ui/Spinner";
 import EmptyState from "../ui/EmptyState";
 import ConfirmDialog from "../ui/ConfirmDialog";
 import SessionFormModal from "./SessionFormModal";
+import SessionFilters from "./SessionFilters";
 import api from "../../api/axios";
 import { useSocketEvent } from "../../context/useSocket";
-import { SESSION_TYPES } from "../../utils/constants";
-import { formatDayKey, formatTime, getErrorMessage, getExpoDays, toLocalDateKey } from "../../utils/helpers";
-
-const typeColors = { keynote: "indigo", workshop: "green", panel: "amber", session: "gray" };
-
-const emptyFilters = { day: "", type: "", topic: "", search: "" };
+import { SESSION_TYPE_COLORS } from "../../utils/constants";
+import {
+  emptySessionFilters,
+  filterSessions,
+  formatDayKey,
+  formatTime,
+  getErrorMessage,
+  groupSessionsByDay,
+} from "../../utils/helpers";
 
 // Admin schedule of one expo, grouped by day.
 // The parent page must join the expo room (useExpoRoom) to get live updates.
 export default function SessionSchedule({ expo }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState(emptyFilters);
+  const [filters, setFilters] = useState(emptySessionFilters);
   // null, "new" or the session being edited
   const [formSession, setFormSession] = useState(null);
   // { action: "cancel" | "delete", session }
@@ -45,10 +47,6 @@ export default function SessionSchedule({ expo }) {
 
   // Someone changed the schedule: load it again
   useSocketEvent("schedule_updated", loadSessions);
-
-  function handleFilterChange(e) {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-  }
 
   async function handleConfirm() {
     const { action, session } = confirm;
@@ -75,77 +73,23 @@ export default function SessionSchedule({ expo }) {
   }
 
   const canAdd = !["cancelled", "completed"].includes(expo.status);
-  const topics = [...new Set(sessions.map((s) => s.topic).filter(Boolean))].sort();
-  const search = filters.search.trim().toLowerCase();
-
-  const filtered = sessions.filter((session) => {
-    if (filters.day && toLocalDateKey(session.startTime) !== filters.day) return false;
-    if (filters.type && session.type !== filters.type) return false;
-    if (filters.topic && session.topic !== filters.topic) return false;
-    if (search) {
-      const inTitle = session.title.toLowerCase().includes(search);
-      const inSpeakers = session.speakers.some((speaker) => speaker.name.toLowerCase().includes(search));
-      if (!inTitle && !inSpeakers) return false;
-    }
-    return true;
-  });
-
-  // Group by day, sorted by start time
-  const groups = {};
-  [...filtered]
-    .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
-    .forEach((session) => {
-      const key = toLocalDateKey(session.startTime);
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(session);
-    });
+  const groups = groupSessionsByDay(filterSessions(sessions, filters));
   const dayKeys = Object.keys(groups).sort();
-
   const hasFilters = Object.values(filters).some(Boolean);
 
   return (
     <div className="space-y-5">
-      <Card className="p-4!">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr_auto] lg:items-end">
-          <div className="relative">
-            <Input
-              label="Search"
-              name="search"
-              placeholder="Title or speaker"
-              value={filters.search}
-              onChange={handleFilterChange}
-            />
-            <Search className="pointer-events-none absolute right-3 bottom-3 h-4 w-4 text-slate-400" aria-hidden="true" />
-          </div>
-          <Select
-            label="Day"
-            name="day"
-            placeholder="All days"
-            options={getExpoDays(expo).map((day) => ({ value: day, label: formatDayKey(day) }))}
-            value={filters.day}
-            onChange={handleFilterChange}
-          />
-          <Select
-            label="Type"
-            name="type"
-            placeholder="All types"
-            options={SESSION_TYPES.map((type) => ({ value: type, label: type[0].toUpperCase() + type.slice(1) }))}
-            value={filters.type}
-            onChange={handleFilterChange}
-          />
-          <Select
-            label="Topic"
-            name="topic"
-            placeholder="All topics"
-            options={topics}
-            value={filters.topic}
-            onChange={handleFilterChange}
-          />
+      <SessionFilters
+        expo={expo}
+        sessions={sessions}
+        filters={filters}
+        onChange={setFilters}
+        action={
           <Button onClick={() => setFormSession("new")} disabled={!canAdd} title={canAdd ? "" : `This expo is ${expo.status}`}>
             <Plus className="h-4 w-4" aria-hidden="true" /> Create session
           </Button>
-        </div>
-      </Card>
+        }
+      />
 
       {sessions.length === 0 ? (
         <Card>
@@ -163,7 +107,7 @@ export default function SessionSchedule({ expo }) {
             message="Try another day, type, topic or search."
             action={
               hasFilters && (
-                <Button variant="secondary" size="sm" onClick={() => setFilters(emptyFilters)}>
+                <Button variant="secondary" size="sm" onClick={() => setFilters(emptySessionFilters)}>
                   Clear filters
                 </Button>
               )
@@ -244,7 +188,7 @@ function SessionCard({ session, onEdit, onCancel, onDelete }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h4 className={`font-semibold text-slate-900 ${cancelled ? "line-through" : ""}`}>{session.title}</h4>
-            <Badge color={typeColors[session.type]}>{session.type}</Badge>
+            <Badge color={SESSION_TYPE_COLORS[session.type]}>{session.type}</Badge>
             {cancelled && <Badge status="cancelled">Cancelled</Badge>}
           </div>
 

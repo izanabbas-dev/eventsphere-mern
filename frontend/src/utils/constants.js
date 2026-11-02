@@ -28,6 +28,9 @@ export const BOOTH_SIZES = ["small", "medium", "large"];
 
 export const CURRENCY = "Rs";
 
+// An exhibitor can pick this many preferred booths when applying
+export const MAX_PREFERRED_BOOTHS = 3;
+
 export const APPLICATION_STATUSES = ["pending", "approved", "rejected", "withdrawn"];
 
 export const SESSION_TYPES = ["session", "workshop", "keynote", "panel"];
@@ -37,3 +40,9 @@ export const USER_ROLES = ["admin", "exhibitor", "attendee"];
 export const FEEDBACK_TYPES = ["suggestion", "issue", "complaint", "other"];
 
 export const FEEDBACK_STATUSES = ["open", "in_progress", "resolved"];
+
+// Badge color for each session type
+export const SESSION_TYPE_COLORS = { keynote: "indigo", workshop: "green", panel: "amber", session: "gray" };
+
+// Bookmark reminder choices, in minutes before the session starts
+export const REMIND_OPTIONS = [15, 30, 60];

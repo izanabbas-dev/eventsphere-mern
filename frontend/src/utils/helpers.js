@@ -43,7 +43,8 @@ const SERVER_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api")
 
 export function fileUrl(path) {
   if (!path) return "";
-  return path.startsWith("http") ? path : `${SERVER_URL}${path}`;
+  // Full URLs and local previews ("blob:...") are used as they are
+  return /^(https?:|blob:)/.test(path) ? path : `${SERVER_URL}${path}`;
 }
 
 // Dates are saved as UTC midnight, so show them in UTC to avoid a day shift
@@ -107,6 +108,16 @@ export function getExpoDays(expo) {
   return days;
 }
 
+// What an exhibitor profile still needs
+export function getProfileChecklist(profile) {
+  return [
+    { label: "Logo", done: Boolean(profile?.logo) },
+    { label: "Description", done: Boolean(profile?.description?.trim()) },
+    { label: "Products/services", done: profile?.productsServices?.length > 0 },
+    { label: "Documents", done: profile?.documents?.length > 0 },
+  ];
+}
+
 // Download a private file with the login token (a normal link cannot send the token)
 export async function downloadFile(url, fileName) {
   try {
@@ -127,4 +138,80 @@ export async function downloadFile(url, fileName) {
     }
     throw error;
   }
+}
+
+export const emptySessionFilters = { day: "", type: "", topic: "", search: "" };
+
+// Filter sessions by day, type, topic and a search word (title or speaker)
+export function filterSessions(sessions, filters) {
+  const search = filters.search.trim().toLowerCase();
+
+  return sessions.filter((session) => {
+    if (filters.day && toLocalDateKey(session.startTime) !== filters.day) return false;
+    if (filters.type && session.type !== filters.type) return false;
+    if (filters.topic && session.topic !== filters.topic) return false;
+    if (search) {
+      const inTitle = session.title.toLowerCase().includes(search);
+      const inSpeakers = session.speakers.some((speaker) => speaker.name.toLowerCase().includes(search));
+      if (!inTitle && !inSpeakers) return false;
+    }
+    return true;
+  });
+}
+
+// { "2026-03-12": [sessions sorted by start time], ... }
+export function groupSessionsByDay(sessions) {
+  const groups = {};
+  [...sessions]
+    .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+    .forEach((session) => {
+      const key = toLocalDateKey(session.startTime);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(session);
+    });
+  return groups;
+}
+
+// "Thu, 12 Mar 2026 · 2:30 PM - 3:30 PM"
+export function formatSessionTime(session) {
+  return `${formatDayKey(toLocalDateKey(session.startTime))} · ${formatTime(session.startTime)} - ${formatTime(session.endTime)}`;
+}
+
+// "example.com" -> "https://example.com"
+export function toWebsiteUrl(website) {
+  if (!website) return "";
+  return /^https?:\/\//i.test(website) ? website : `https://${website}`;
+}
+
+// "just now", "5 min ago", "3 h ago", "2 days ago", then the date
+export function timeAgo(date) {
+  const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+  return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// Chat list time: "2:30 PM" for today, else "12 Mar"
+export function formatChatTime(date) {
+  if (!date) return "";
+  if (toLocalDateKey(date) === toLocalDateKey(new Date())) return formatTime(date);
+  return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+// The backend saves short links like "/chat/<id>". Turn them into the page for this role.
+export function getNotificationPath(link, role) {
+  if (!link) return "";
+  const [, first, id] = link.split("/");
+
+  if (first === "chat") return `/${role}/messages?c=${id}`;
+  if (first === "feedback") return `/${role}/feedback`;
+  if (first === "applications") return role === "admin" ? "/admin/applications" : "/exhibitor/applications";
+  if (first === "expos" && id) return `/${role}/expos/${id}`;
+  if (first === "sessions") return role === "attendee" ? "/attendee/schedule" : `/${role}`;
+  return link;
 }
