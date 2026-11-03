@@ -7,6 +7,7 @@ import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Spinner from "../../components/ui/Spinner";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import TicketCard from "../../components/attendee/TicketCard";
 import api from "../../api/axios";
@@ -19,13 +20,25 @@ export default function AttendeeRegistrations() {
   // The registration to cancel
   const [cancelTarget, setCancelTarget] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const loadRegistrations = useCallback(() => {
     fetchMyRegistrations()
-      .then(setRegistrations)
-      .catch((error) => toast.error(getErrorMessage(error)))
+      .then((list) => {
+        setRegistrations(list);
+        setFailed(false);
+      })
+      .catch((error) => {
+        toast.error(getErrorMessage(error));
+        setFailed(true);
+      })
       .finally(() => setLoading(false));
   }, []);
+
+  function retry() {
+    setLoading(true);
+    loadRegistrations();
+  }
 
   useEffect(() => {
     loadRegistrations();
@@ -68,7 +81,9 @@ export default function AttendeeRegistrations() {
     <>
       <PageHeader title="My Registrations" subtitle="Your expo tickets and booked sessions." />
 
-      {expoRegistrations.length === 0 ? (
+      {failed ? (
+        <LoadError onRetry={retry} />
+      ) : expoRegistrations.length === 0 ? (
         <Card>
           <EmptyState
             icon={Ticket}

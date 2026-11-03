@@ -8,17 +8,18 @@ import Button from "../../components/ui/Button";
 import Spinner from "../../components/ui/Spinner";
 import StatCard from "../../components/ui/StatCard";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import CompanyLogo from "../../components/applications/CompanyLogo";
 import api from "../../api/axios";
 import { fetchMyBooths, fetchMyProfile } from "../../api/exhibitorApi";
 import useAuth from "../../context/useAuth";
+import useNotifications from "../../context/useNotifications";
 import { formatDate, getErrorMessage, getProfileChecklist } from "../../utils/helpers";
 
 async function fetchDashboard(userId) {
-  const [profile, appsRes, notesRes, exposRes, booths] = await Promise.all([
+  const [profile, appsRes, exposRes, booths] = await Promise.all([
     fetchMyProfile(),
     api.get("/applications/my"),
-    api.get("/notifications/my"),
     api.get("/expos", { params: { status: "published" } }),
     fetchMyBooths(userId),
   ]);
@@ -26,7 +27,6 @@ async function fetchDashboard(userId) {
   return {
     profile,
     applications: appsRes.data.applications,
-    unreadCount: notesRes.data.unreadCount,
     openExpos: exposRes.data.expos,
     booths,
   };
@@ -34,6 +34,8 @@ async function fetchDashboard(userId) {
 
 export default function ExhibitorDashboard() {
   const { user } = useAuth();
+  // Same live count as the bell in the top bar
+  const { unreadCount } = useNotifications();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -46,15 +48,9 @@ export default function ExhibitorDashboard() {
 
   if (loading) return <Spinner fullPage />;
 
-  if (!data) {
-    return (
-      <Card>
-        <p className="text-sm text-slate-600">Could not load your dashboard. Please refresh the page.</p>
-      </Card>
-    );
-  }
+  if (!data) return <LoadError onRetry={() => window.location.reload()} />;
 
-  const { profile, applications, unreadCount, openExpos, booths } = data;
+  const { profile, applications, openExpos, booths } = data;
   const countBy = (status) => applications.filter((app) => app.status === status).length;
 
   // { expoId: "pending" }

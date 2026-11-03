@@ -8,6 +8,7 @@ import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Spinner from "../../components/ui/Spinner";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import api from "../../api/axios";
 import { formatDate, getErrorMessage } from "../../utils/helpers";
@@ -17,14 +18,26 @@ export default function ExhibitorApplications() {
   const [loading, setLoading] = useState(true);
   const [withdrawing, setWithdrawing] = useState(null);
   const [working, setWorking] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const loadApplications = useCallback(() => {
     api
       .get("/applications/my")
-      .then((res) => setApplications(res.data.applications))
-      .catch((error) => toast.error(getErrorMessage(error)))
+      .then((res) => {
+        setApplications(res.data.applications);
+        setFailed(false);
+      })
+      .catch((error) => {
+        toast.error(getErrorMessage(error));
+        setFailed(true);
+      })
       .finally(() => setLoading(false));
   }, []);
+
+  function retry() {
+    setLoading(true);
+    loadApplications();
+  }
 
   useEffect(() => {
     loadApplications();
@@ -56,6 +69,8 @@ export default function ExhibitorApplications() {
         <div className="flex justify-center py-16 text-indigo-600">
           <Spinner />
         </div>
+      ) : failed ? (
+        <LoadError onRetry={retry} />
       ) : applications.length === 0 ? (
         <Card>
           <EmptyState

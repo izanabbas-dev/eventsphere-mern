@@ -81,7 +81,7 @@ export default function AttendeeExhibitorProfile() {
     );
   }
 
-  const { profile, booth } = data;
+  const { profile, booth, contactHidden } = data;
   const contact = profile.contact || {};
   const products = profile.productsServices || [];
 
@@ -170,10 +170,17 @@ export default function AttendeeExhibitorProfile() {
               </ContactRow>
             )}
             {contact.address && <ContactRow icon={MapPin}>{contact.address}</ContactRow>}
-            {!contact.person && !contact.email && !contact.phone && !profile.website && !contact.address && (
+            {!contactHidden && !contact.person && !contact.email && !contact.phone && !profile.website && !contact.address && (
               <li className="text-slate-500">No contact details yet.</li>
             )}
           </ul>
+
+          {contactHidden && (
+            <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              This exhibitor keeps their email and phone private.
+              {expoId ? " Use the Message button to contact them." : ""}
+            </p>
+          )}
 
           {booth && (
             <div className="mt-6 rounded-xl bg-slate-50 p-4 text-sm">

@@ -20,6 +20,7 @@ import Badge from "../../components/ui/Badge";
 import Spinner from "../../components/ui/Spinner";
 import StatCard from "../../components/ui/StatCard";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import ExpoFormModal from "../../components/expo/ExpoFormModal";
 import api from "../../api/axios";
 import useAuth from "../../context/useAuth";
@@ -65,6 +66,9 @@ export default function AdminDashboard() {
   }, [loadData]);
 
   if (loading) return <Spinner fullPage />;
+
+  // The overview is missing only when loading failed
+  if (!data.overview) return <LoadError onRetry={() => window.location.reload()} />;
 
   const { overview, upcoming, pending } = data;
   const users = overview?.usersByRole || {};

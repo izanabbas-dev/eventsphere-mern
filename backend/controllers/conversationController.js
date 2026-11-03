@@ -5,6 +5,7 @@ import Expo from "../models/Expo.js";
 import ExhibitorProfile from "../models/ExhibitorProfile.js";
 import { createNotification } from "../utils/notify.js";
 import { emitToUser } from "../utils/socket.js";
+import { canSeeContact } from "../utils/helpers.js";
 
 // Sorted roles: "admin" < "attendee" < "exhibitor". Returns null when the chat is not allowed.
 const getConversationType = (roleA, roleB) => {
@@ -72,7 +73,7 @@ export const startConversation = async (req, res) => {
 export const getMyConversations = async (req, res) => {
   const conversations = await Conversation.find({ participants: req.user._id })
     .sort({ updatedAt: -1 })
-    .populate("participants", "name role avatar")
+    .populate("participants", "name role avatar email phone showContactInfo")
     .populate("lastMessage", "text sender isRead createdAt")
     .populate("expo", "title")
     .lean();
@@ -84,6 +85,8 @@ export const getMyConversations = async (req, res) => {
   const result = conversations.map((conversation) => {
     const other = conversation.participants.find((p) => p && !p._id.equals(req.user._id));
     const profile = other && profiles.find((p) => p.user.equals(other._id));
+    // Privacy: email and phone only when the other user allows it (admins always see them)
+    const showContact = other && canSeeContact(req, other);
 
     return {
       _id: conversation._id,
@@ -96,6 +99,8 @@ export const getMyConversations = async (req, res) => {
             role: other.role,
             avatar: other.avatar,
             companyName: profile ? profile.companyName : null,
+            email: showContact ? other.email : null,
+            phone: showContact ? other.phone || null : null,
           }
         : null,
       lastMessage: conversation.lastMessage,

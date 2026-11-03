@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Send, X } from "lucide-react";
 import toast from "react-hot-toast";
 import Card from "../ui/Card";
@@ -7,7 +8,8 @@ import Badge from "../ui/Badge";
 import Textarea from "../ui/Textarea";
 import ConfirmDialog from "../ui/ConfirmDialog";
 import api from "../../api/axios";
-import { formatDate, getErrorMessage, getFieldErrors } from "../../utils/helpers";
+import { fetchMyProfile } from "../../api/exhibitorApi";
+import { formatDate, getErrorMessage, getFieldErrors, getProfileChecklist } from "../../utils/helpers";
 import { MAX_PREFERRED_BOOTHS as MAX_PREFERRED } from "../../utils/constants";
 
 // Apply form, or my application status if I already applied
@@ -41,6 +43,14 @@ function ApplyForm({ expoId, wasWithdrawn, booths, selectedIds, onRemoveSelected
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  // What my company profile still needs (the organizer reviews it with the application)
+  const [missing, setMissing] = useState([]);
+
+  useEffect(() => {
+    fetchMyProfile()
+      .then((profile) => setMissing(getProfileChecklist(profile).filter((item) => !item.done)))
+      .catch(() => {});
+  }, []);
 
   const selectedBooths = booths.filter((booth) => selectedIds.includes(booth._id));
 
@@ -72,6 +82,16 @@ function ApplyForm({ expoId, wasWithdrawn, booths, selectedIds, onRemoveSelected
       {wasWithdrawn && (
         <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
           You withdrew your earlier application. You can apply again.
+        </p>
+      )}
+
+      {missing.length > 0 && (
+        <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          The organizer reviews your company profile with this application. Still missing:{" "}
+          {missing.map((item) => item.label).join(", ")}.{" "}
+          <Link to="/exhibitor/profile" className="font-semibold underline">
+            Complete profile
+          </Link>
         </p>
       )}
 

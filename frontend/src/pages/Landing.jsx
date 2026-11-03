@@ -1,9 +1,34 @@
-import { ArrowRight, CalendarDays, Check, ClipboardList, MapPin, Store, Ticket, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, CalendarDays, Check, ClipboardList, MapPin, Store, Ticket } from "lucide-react";
 import Logo from "../components/Logo";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
+import Spinner from "../components/ui/Spinner";
+import api from "../api/axios";
 import useAuth from "../context/useAuth";
-import { getDashboardPath } from "../utils/helpers";
+import { formatDate, getDashboardPath, toInputDate } from "../utils/helpers";
+
+// The next published expo that has not ended, with its booth, exhibitor and session counts
+async function fetchNextExpo() {
+  const res = await api.get("/expos", { params: { status: "published" } });
+  const today = toInputDate(new Date());
+  // The list is already sorted by start date
+  const expo = res.data.expos.find((item) => toInputDate(item.endDate) >= today);
+  if (!expo) return null;
+
+  const [boothsRes, exhibitorsRes, sessionsRes] = await Promise.all([
+    api.get(`/expos/${expo._id}/booths`),
+    api.get(`/expos/${expo._id}/exhibitors`),
+    api.get(`/expos/${expo._id}/sessions`),
+  ]);
+
+  return {
+    ...expo,
+    boothCount: boothsRes.data.count,
+    exhibitorCount: exhibitorsRes.data.count,
+    sessionCount: sessionsRes.data.sessions.filter((session) => session.status !== "cancelled").length,
+  };
+}
 
 const roleCards = [
   {
@@ -69,51 +94,28 @@ export default function Landing() {
                 in real time.
               </p>
               <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
-                <Button to="/register" size="lg">
-                  Get started free <ArrowRight className="h-5 w-5" aria-hidden="true" />
-                </Button>
-                <Button to="/login" size="lg" variant="secondary">
-                  Log in
-                </Button>
+                {user ? (
+                  <Button to={getDashboardPath(user.role)} size="lg">
+                    Go to dashboard <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                  </Button>
+                ) : (
+                  <>
+                    <Button to="/register" size="lg">
+                      Get started free <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="secondary"
+                      onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+                    >
+                      How it works
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Small preview card, only for looks */}
-            <div className="mx-auto w-full max-w-md" aria-hidden="true">
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-indigo-100">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-semibold tracking-wider text-indigo-600 uppercase">Upcoming expo</p>
-                    <p className="mt-1 text-lg font-bold text-slate-900">Tech Innovation Expo</p>
-                  </div>
-                  <Badge status="approved">Open</Badge>
-                </div>
-                <div className="mt-4 space-y-2 text-sm text-slate-600">
-                  <p className="flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-slate-400" /> 12 - 14 March
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-slate-400" /> Expo Centre, Karachi
-                  </p>
-                </div>
-                <div className="mt-6 grid grid-cols-3 gap-3 text-center">
-                  {[
-                    ["120", "Booths"],
-                    ["85", "Exhibitors"],
-                    ["24", "Sessions"],
-                  ].map(([value, label]) => (
-                    <div key={label} className="rounded-xl bg-slate-50 py-3">
-                      <p className="text-xl font-bold text-slate-900">{value}</p>
-                      <p className="text-xs text-slate-500">{label}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 flex items-center gap-3 rounded-xl bg-indigo-50 p-3">
-                  <Users className="h-5 w-5 text-indigo-600" />
-                  <p className="text-sm text-indigo-900">2,400 attendees registered</p>
-                </div>
-              </div>
-            </div>
+            <NextExpoCard />
           </div>
         </section>
 
@@ -157,6 +159,77 @@ export default function Landing() {
           <p className="text-sm text-slate-500">© {new Date().getFullYear()} EventSphere Management. All rights reserved.</p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function NextExpoCard() {
+  const { user } = useAuth();
+  const [expo, setExpo] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchNextExpo()
+      .then(setExpo)
+      .catch(() => setExpo(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Logged in users open the expo in their dashboard, guests sign up first
+  const link = user && expo ? `${getDashboardPath(user.role)}/expos/${expo._id}` : "/register";
+
+  return (
+    <div className="mx-auto w-full max-w-md">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-indigo-100">
+        {loading ? (
+          <div className="flex justify-center py-16 text-indigo-600">
+            <Spinner />
+          </div>
+        ) : !expo ? (
+          <div className="py-8 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+              <CalendarDays className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <p className="mt-4 text-lg font-bold text-slate-900">No upcoming expo yet</p>
+            <p className="mt-1 text-sm text-slate-500">New expos will show here as soon as the organizer publishes them.</p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold tracking-wider text-indigo-600 uppercase">Next expo</p>
+                <h2 className="mt-1 text-lg font-bold break-words text-slate-900">{expo.title}</h2>
+              </div>
+              <Badge status="published">Open</Badge>
+            </div>
+            <div className="mt-4 space-y-2 text-sm text-slate-600">
+              <p className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                {formatDate(expo.startDate)} - {formatDate(expo.endDate)}
+              </p>
+              <p className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                <span className="truncate">{expo.location}</span>
+              </p>
+            </div>
+            <div className="mt-6 grid grid-cols-3 gap-3 text-center">
+              {[
+                [expo.boothCount, "Booths"],
+                [expo.exhibitorCount, "Exhibitors"],
+                [expo.sessionCount, "Sessions"],
+              ].map(([value, label]) => (
+                <div key={label} className="rounded-xl bg-slate-50 py-3">
+                  <p className="text-xl font-bold text-slate-900">{value}</p>
+                  <p className="text-xs text-slate-500">{label}</p>
+                </div>
+              ))}
+            </div>
+            <Button to={link} fullWidth className="mt-6">
+              {user ? "View expo" : "Sign up to join"} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

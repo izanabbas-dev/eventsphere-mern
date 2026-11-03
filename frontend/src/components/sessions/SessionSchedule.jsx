@@ -45,8 +45,9 @@ export default function SessionSchedule({ expo }) {
     loadSessions();
   }, [loadSessions]);
 
-  // Someone changed the schedule: load it again
+  // Someone changed the schedule or booked a seat: load it again
   useSocketEvent("schedule_updated", loadSessions);
+  useSocketEvent("registrations_updated", loadSessions);
 
   async function handleConfirm() {
     const { action, session } = confirm;

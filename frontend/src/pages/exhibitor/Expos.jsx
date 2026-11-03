@@ -7,6 +7,7 @@ import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Spinner from "../../components/ui/Spinner";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import api from "../../api/axios";
 import { fileUrl, formatDate, getErrorMessage } from "../../utils/helpers";
 
@@ -15,6 +16,7 @@ export default function ExhibitorExpos() {
   const [myStatus, setMyStatus] = useState({});
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     Promise.all([api.get("/expos", { params: { status: "published" } }), api.get("/applications/my")])
@@ -27,7 +29,10 @@ export default function ExhibitorExpos() {
         });
         setMyStatus(statuses);
       })
-      .catch((error) => toast.error(getErrorMessage(error)))
+      .catch((error) => {
+        toast.error(getErrorMessage(error));
+        setFailed(true);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -56,6 +61,8 @@ export default function ExhibitorExpos() {
         <div className="flex justify-center py-16 text-indigo-600">
           <Spinner />
         </div>
+      ) : failed ? (
+        <LoadError onRetry={() => window.location.reload()} />
       ) : filtered.length === 0 ? (
         <Card>
           <EmptyState

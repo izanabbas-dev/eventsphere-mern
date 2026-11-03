@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell, CalendarDays, Clock, MapPin, Star, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -8,6 +8,7 @@ import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Spinner from "../../components/ui/Spinner";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import api from "../../api/axios";
 import { fetchMyBookmarks } from "../../api/attendeeApi";
 import { formatSessionTime, getErrorMessage } from "../../utils/helpers";
@@ -16,14 +17,30 @@ export default function AttendeeBookmarks() {
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState(null);
+  const [failed, setFailed] = useState(false);
 
-  useEffect(() => {
+  const loadBookmarks = useCallback(() => {
     // The backend already sorts them by session time
     fetchMyBookmarks()
-      .then(setBookmarks)
-      .catch((error) => toast.error(getErrorMessage(error)))
+      .then((list) => {
+        setBookmarks(list);
+        setFailed(false);
+      })
+      .catch((error) => {
+        toast.error(getErrorMessage(error));
+        setFailed(true);
+      })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadBookmarks();
+  }, [loadBookmarks]);
+
+  function retry() {
+    setLoading(true);
+    loadBookmarks();
+  }
 
   async function handleRemove(bookmark) {
     setRemovingId(bookmark._id);
@@ -44,7 +61,9 @@ export default function AttendeeBookmarks() {
     <>
       <PageHeader title="Bookmarks" subtitle="Sessions you saved. You get a reminder before each one starts." />
 
-      {bookmarks.length === 0 ? (
+      {failed ? (
+        <LoadError onRetry={retry} />
+      ) : bookmarks.length === 0 ? (
         <Card>
           <EmptyState
             icon={Star}

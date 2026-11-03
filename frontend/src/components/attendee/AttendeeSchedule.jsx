@@ -58,6 +58,11 @@ export default function AttendeeSchedule({ expo, showFilters = false }) {
 
   // The admin changed the schedule: load it again
   useSocketEvent("schedule_updated", reload);
+  // Someone booked or freed a seat: load the fresh "seats left"
+  const reloadSessions = useCallback(() => {
+    loadSessions().catch(() => {});
+  }, [loadSessions]);
+  useSocketEvent("registrations_updated", reloadSessions);
 
   // Run an API call for one session, then reload
   async function runAction(sessionId, request) {

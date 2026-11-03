@@ -20,6 +20,9 @@ const userSchema = new mongoose.Schema(
       termsAccepted: { type: Boolean, default: false },
       acceptedAt: { type: Date },
     },
+    // Privacy: can other users (not admins) see this user's email and phone?
+    // Not saved yet = role default: exhibitors and admins share, attendees do not (see canSeeContact)
+    showContactInfo: { type: Boolean },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
     passwordChangedAt: { type: Date, select: false },

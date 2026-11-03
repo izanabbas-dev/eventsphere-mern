@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2, Camera } from "lucide-react";
+import { Building2, Camera, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import PageHeader from "../../components/PageHeader";
 import Card from "../../components/ui/Card";
@@ -22,7 +22,7 @@ export default function Profile() {
 
   return (
     <>
-      <PageHeader title="My account" subtitle="Your photo, personal details and password." />
+      <PageHeader title="My account" subtitle="Your photo, personal details, privacy and password." />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6">
@@ -45,10 +45,74 @@ export default function Profile() {
 
         <div className="space-y-6 lg:col-span-2">
           <DetailsCard />
+          <PrivacyCard />
           <PasswordCard />
         </div>
       </div>
     </>
+  );
+}
+
+// "Show my contact info to others" switch. It is saved right away.
+function PrivacyCard() {
+  const { user, updateUser } = useAuth();
+  const [saving, setSaving] = useState(false);
+  // Not saved yet = same default as the backend: exhibitors share, attendees do not
+  const isOn = typeof user.showContactInfo === "boolean" ? user.showContactInfo : user.role !== "attendee";
+
+  async function handleToggle() {
+    setSaving(true);
+    try {
+      const res = await api.put("/auth/me", { showContactInfo: !isOn });
+      updateUser(res.data.user);
+      toast.success(isOn ? "Your email and phone are now hidden" : "Your email and phone are now visible");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card>
+      <div className="flex items-start gap-3">
+        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-semibold text-slate-900">Privacy</h2>
+          <div className="mt-3 flex items-start justify-between gap-4">
+            <div>
+              <p id="contact-switch-label" className="text-sm font-medium text-slate-900">
+                Show my contact info to others
+              </p>
+              <p id="contact-switch-hint" className="mt-1 text-sm text-slate-500">
+                {user.role === "exhibitor"
+                  ? "When on, attendees see your company contact email and phone (or your account email and phone if those are empty) on your company page and in chats. When off, they are hidden."
+                  : "When off, other users cannot see your email and phone in chats."}{" "}
+                Organizers (admins) can always see them.
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isOn}
+              aria-labelledby="contact-switch-label"
+              aria-describedby="contact-switch-hint"
+              onClick={handleToggle}
+              disabled={saving}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:ring-2 focus:ring-indigo-500/40 focus:outline-none disabled:opacity-60 ${
+                isOn ? "bg-indigo-600" : "bg-slate-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  isOn ? "translate-x-5" : "translate-x-0.5"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 }
 

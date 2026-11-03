@@ -6,7 +6,24 @@ import Expo from "../models/Expo.js";
 import User from "../models/User.js";
 import { getFileUrl, deleteFile, deletePrivateFile, PRIVATE_FOLDER } from "../middleware/upload.js";
 import { saveBoothVisit } from "../utils/boothHelpers.js";
-import { isAdmin, escapeRegex } from "../utils/helpers.js";
+import { isAdmin, escapeRegex, canSeeContact } from "../utils/helpers.js";
+
+// Public contact of a profile (plain object). An empty company email or phone falls back
+// to the exhibitor's account email and phone. Both are removed when the owner hides them.
+const applyContactPrivacy = (req, profile, owner) => {
+  const contact = profile.contact || {};
+
+  if (!canSeeContact(req, owner)) {
+    profile.contact = { ...contact, email: undefined, phone: undefined };
+  } else {
+    profile.contact = {
+      ...contact,
+      email: contact.email || owner.email,
+      phone: contact.phone || owner.phone || "",
+    };
+  }
+  return profile;
+};
 
 // Logo is changed with POST /api/exhibitors/profile/logo, not here
 const profileFields = ["companyName", "description", "category", "website", "productsServices"];
@@ -54,7 +71,9 @@ export const getExpoExhibitors = async (req, res) => {
   ];
 
   // Skip disabled accounts
-  const activeExhibitors = await User.find({ _id: { $in: exhibitorIds }, role: "exhibitor", isActive: true }).select("_id");
+  const activeExhibitors = await User.find({ _id: { $in: exhibitorIds }, role: "exhibitor", isActive: true }).select(
+    "_id role email phone showContactInfo"
+  );
 
   const filter = { user: { $in: activeExhibitors.map((user) => user._id) } };
 
@@ -75,6 +94,9 @@ export const getExpoExhibitors = async (req, res) => {
   profiles.forEach((profile) => {
     const booth = bookedBooths.find((b) => b.exhibitor.equals(profile.user));
     profile.booth = booth ? { _id: booth._id, boothNumber: booth.boothNumber, hall: booth.hall, position: booth.position } : null;
+
+    const owner = activeExhibitors.find((user) => user._id.equals(profile.user));
+    applyContactPrivacy(req, profile, owner);
   });
 
   res.status(200).json({ success: true, count: profiles.length, exhibitors: profiles });
@@ -114,7 +136,10 @@ export const getExhibitorProfile = async (req, res) => {
     }
   }
 
-  res.status(200).json({ success: true, name: exhibitor.name, profile, booth });
+  const profileData = applyContactPrivacy(req, profile.toObject(), exhibitor);
+  const contactHidden = !canSeeContact(req, exhibitor);
+
+  res.status(200).json({ success: true, name: exhibitor.name, profile: profileData, booth, contactHidden });
 };
 
 // POST /api/exhibitors/profile/logo  (form-data field: logo)

@@ -75,9 +75,10 @@ export default function ExpoReport({ expoId }) {
     loadReport();
   }, [loadReport]);
 
-  // A booth or session of this expo changed: load fresh numbers
+  // A booth, session or registration of this expo changed: load fresh numbers
   useSocketEvent("booth_updated", loadReport);
   useSocketEvent("schedule_updated", loadReport);
+  useSocketEvent("registrations_updated", loadReport);
 
   function handleRefresh() {
     setRefreshing(true);

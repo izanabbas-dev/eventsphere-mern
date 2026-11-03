@@ -7,16 +7,17 @@ import Button from "../../components/ui/Button";
 import Spinner from "../../components/ui/Spinner";
 import StatCard from "../../components/ui/StatCard";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import api from "../../api/axios";
 import { fetchMyBookmarks, fetchMyRegistrations } from "../../api/attendeeApi";
 import useAuth from "../../context/useAuth";
+import useNotifications from "../../context/useNotifications";
 import { formatDate, formatSessionTime, getErrorMessage, toInputDate } from "../../utils/helpers";
 
 async function fetchDashboard() {
-  const [registrations, bookmarks, notesRes, exposRes] = await Promise.all([
+  const [registrations, bookmarks, exposRes] = await Promise.all([
     fetchMyRegistrations(),
     fetchMyBookmarks(),
-    api.get("/notifications/my"),
     api.get("/expos", { params: { status: "published" } }),
   ]);
 
@@ -37,13 +38,14 @@ async function fetchDashboard() {
     upcomingExpos,
     nextBookmarks,
     bookmarkCount: bookmarks.length,
-    unreadCount: notesRes.data.unreadCount,
     openExpos: exposRes.data.expos,
   };
 }
 
 export default function AttendeeDashboard() {
   const { user } = useAuth();
+  // Same live count as the bell in the top bar
+  const { unreadCount } = useNotifications();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -56,15 +58,9 @@ export default function AttendeeDashboard() {
 
   if (loading) return <Spinner fullPage />;
 
-  if (!data) {
-    return (
-      <Card>
-        <p className="text-sm text-slate-600">Could not load your dashboard. Please refresh the page.</p>
-      </Card>
-    );
-  }
+  if (!data) return <LoadError onRetry={() => window.location.reload()} />;
 
-  const { upcomingExpos, nextBookmarks, bookmarkCount, unreadCount, openExpos } = data;
+  const { upcomingExpos, nextBookmarks, bookmarkCount, openExpos } = data;
   const registeredIds = upcomingExpos.map((r) => r.expo._id);
 
   return (

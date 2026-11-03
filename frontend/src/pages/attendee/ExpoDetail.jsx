@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CalendarDays, MapPin, Tag, Ticket } from "lucide-react";
 import toast from "react-hot-toast";
 import Card from "../../components/ui/Card";
@@ -15,7 +15,7 @@ import ExhibitorSearch from "../../components/attendee/ExhibitorSearch";
 import AttendeeFloorPlan from "../../components/attendee/AttendeeFloorPlan";
 import api from "../../api/axios";
 import { fetchMyRegistrations, findExpoRegistration } from "../../api/attendeeApi";
-import { useExpoRoom } from "../../context/useSocket";
+import { useExpoRoom, useSocketEvent } from "../../context/useSocket";
 import { fileUrl, formatDate, getErrorMessage } from "../../utils/helpers";
 
 const tabs = [
@@ -45,8 +45,24 @@ export default function AttendeeExpoDetail() {
       .finally(() => setLoading(false));
   }, [id, loadRegistrations]);
 
-  // Live updates for the schedule and floor plan tabs
+  // Live updates for the expo details, schedule and floor plan tabs
   useExpoRoom(id);
+  const navigate = useNavigate();
+  const handleExpoUpdated = useCallback(
+    (data) => {
+      if (data.action === "deleted") {
+        toast("This expo was removed by the organizer");
+        navigate("/attendee/expos", { replace: true });
+      } else {
+        api
+          .get(`/expos/${id}`)
+          .then((res) => setExpo(res.data.expo))
+          .catch(() => {});
+      }
+    },
+    [id, navigate]
+  );
+  useSocketEvent("expo_updated", handleExpoUpdated);
 
   if (loading) {
     return (

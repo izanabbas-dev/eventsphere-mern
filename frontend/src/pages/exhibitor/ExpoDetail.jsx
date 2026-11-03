@@ -68,6 +68,23 @@ export default function ExhibitorExpoDetail() {
   }, [loadBooths, loadApplication]);
   useSocketEvent("booth_updated", handleBoothUpdated);
 
+  // Live updates: the organizer changed or removed this expo
+  const handleExpoUpdated = useCallback(
+    (data) => {
+      if (data.action === "deleted") {
+        toast("This expo was removed by the organizer");
+        navigate("/exhibitor/expos", { replace: true });
+      } else {
+        api
+          .get(`/expos/${id}`)
+          .then((res) => setExpo(res.data.expo))
+          .catch(() => {});
+      }
+    },
+    [id, navigate]
+  );
+  useSocketEvent("expo_updated", handleExpoUpdated);
+
   function reloadAll() {
     loadBooths().catch((error) => toast.error(getErrorMessage(error)));
     loadApplication().catch((error) => toast.error(getErrorMessage(error)));

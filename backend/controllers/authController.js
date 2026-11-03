@@ -2,6 +2,7 @@ import crypto from "crypto";
 import User from "../models/User.js";
 import ExhibitorProfile from "../models/ExhibitorProfile.js";
 import sendEmail from "../utils/sendEmail.js";
+import { defaultShowContact } from "../utils/helpers.js";
 
 // Sends the token and user (without password) in one response
 const sendTokenResponse = (user, statusCode, res, message) => {
@@ -26,6 +27,7 @@ export const register = async (req, res) => {
     password,
     phone,
     role,
+    showContactInfo: defaultShowContact(role),
     consent: { termsAccepted: true, acceptedAt: new Date() },
   });
 
@@ -70,13 +72,14 @@ export const getMe = async (req, res) => {
 };
 
 // PUT /api/auth/me
-// Only name and phone can be changed here. Avatar is changed with POST /api/uploads/avatar.
+// Only name, phone and the privacy setting can be changed here. Avatar is changed with POST /api/uploads/avatar.
 export const updateMe = async (req, res) => {
-  const { name, phone } = req.body;
+  const { name, phone, showContactInfo } = req.body;
   const user = req.user;
 
   if (name !== undefined) user.name = name;
   if (phone !== undefined) user.phone = phone;
+  if (showContactInfo !== undefined) user.showContactInfo = showContactInfo;
 
   await user.save();
 

@@ -9,6 +9,7 @@ import Badge from "../ui/Badge";
 import Select from "../ui/Select";
 import Spinner from "../ui/Spinner";
 import EmptyState from "../ui/EmptyState";
+import LoadError from "../ui/LoadError";
 import api from "../../api/axios";
 import { useExpoRoom } from "../../context/useSocket";
 import { getErrorMessage } from "../../utils/helpers";
@@ -19,15 +20,29 @@ import { getErrorMessage } from "../../utils/helpers";
 export default function ExpoPickerPage({ title, subtitle, emptyMessage, basePath = "/admin", hideStatuses = [], children }) {
   const [allExpos, setAllExpos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  // Changing this number loads the expos again ("Try again")
+  const [reloadKey, setReloadKey] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     api
       .get("/expos")
-      .then((res) => setAllExpos(res.data.expos))
-      .catch((error) => toast.error(getErrorMessage(error)))
+      .then((res) => {
+        setAllExpos(res.data.expos);
+        setFailed(false);
+      })
+      .catch((error) => {
+        toast.error(getErrorMessage(error));
+        setFailed(true);
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [reloadKey]);
+
+  function retry() {
+    setLoading(true);
+    setReloadKey((key) => key + 1);
+  }
 
   const expos = allExpos.filter((expo) => !hideStatuses.includes(expo.status));
 
@@ -43,7 +58,9 @@ export default function ExpoPickerPage({ title, subtitle, emptyMessage, basePath
     <>
       <PageHeader title={title} subtitle={subtitle} />
 
-      {expos.length === 0 ? (
+      {failed ? (
+        <LoadError onRetry={retry} />
+      ) : expos.length === 0 ? (
         <Card>
           <EmptyState
             icon={CalendarDays}

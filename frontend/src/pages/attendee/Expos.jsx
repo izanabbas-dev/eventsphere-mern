@@ -7,6 +7,7 @@ import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Spinner from "../../components/ui/Spinner";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import api from "../../api/axios";
 import { fetchMyRegistrations, findExpoRegistration } from "../../api/attendeeApi";
 import { fileUrl, formatDate, getErrorMessage } from "../../utils/helpers";
@@ -16,6 +17,7 @@ export default function AttendeeExpos() {
   const [registrations, setRegistrations] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     Promise.all([api.get("/expos"), fetchMyRegistrations()])
@@ -23,7 +25,10 @@ export default function AttendeeExpos() {
         setExpos(exposRes.data.expos.filter((expo) => expo.status !== "cancelled"));
         setRegistrations(regs);
       })
-      .catch((error) => toast.error(getErrorMessage(error)))
+      .catch((error) => {
+        toast.error(getErrorMessage(error));
+        setFailed(true);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -52,6 +57,8 @@ export default function AttendeeExpos() {
         <div className="flex justify-center py-16 text-indigo-600">
           <Spinner />
         </div>
+      ) : failed ? (
+        <LoadError onRetry={() => window.location.reload()} />
       ) : filtered.length === 0 ? (
         <Card>
           <EmptyState

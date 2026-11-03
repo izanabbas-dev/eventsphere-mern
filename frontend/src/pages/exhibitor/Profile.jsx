@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Download, FileText, ImageUp, Trash2, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import PageHeader from "../../components/PageHeader";
@@ -186,7 +187,15 @@ function CompanyForm({ profile, onSaved }) {
         />
 
         <div className="border-t border-slate-100 pt-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-900">Contact</h3>
+          <h3 className="text-sm font-semibold text-slate-900">Contact</h3>
+          <p className="mt-1 mb-4 text-sm text-slate-500">
+            Attendees see these details on your company page. If the email or phone is empty, your account email and
+            phone are shown instead. To hide them, turn off "Show my contact info" in{" "}
+            <Link to="/profile" className="font-semibold text-indigo-600 hover:underline">
+              My account
+            </Link>
+            .
+          </p>
           <div className="grid gap-5 sm:grid-cols-2">
             <Input
               label="Contact person"

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, MessageSquare, Send } from "lucide-react";
+import { ArrowLeft, Mail, MessageSquare, Phone, Send } from "lucide-react";
 import Avatar from "../ui/Avatar";
 import Spinner from "../ui/Spinner";
 import EmptyState from "../ui/EmptyState";
@@ -84,6 +84,23 @@ export default function ChatWindow({ conversation, messages, loading, myId, onBa
             {other.companyName && `${other.companyName} · `}
             {conversation.expo?.title}
           </p>
+          {/* Sent by the backend only when this user shares contact info */}
+          {(other.email || other.phone) && (
+            <p className="mt-0.5 flex flex-wrap gap-x-3 text-xs">
+              {other.email && (
+                <a href={`mailto:${other.email}`} className="flex min-w-0 items-center gap-1 text-indigo-600 hover:underline">
+                  <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{other.email}</span>
+                </a>
+              )}
+              {other.phone && (
+                <a href={`tel:${other.phone}`} className="flex items-center gap-1 text-indigo-600 hover:underline">
+                  <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {other.phone}
+                </a>
+              )}
+            </p>
+          )}
         </div>
       </div>
 

@@ -2,6 +2,10 @@ import crypto from "crypto";
 import Registration from "../models/Registration.js";
 import Expo from "../models/Expo.js";
 import Session from "../models/Session.js";
+import { emitToExpo } from "../utils/socket.js";
+
+// Live update for analytics and "seats left". No personal data is sent.
+const emitRegistrationsUpdated = (expoId) => emitToExpo(expoId, "registrations_updated", { expoId });
 
 // e.g. ES-4F9A1C2B
 const makeTicketCode = () => `ES-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
@@ -36,6 +40,8 @@ export const registerForExpo = async (req, res) => {
 
   registration.status = "registered";
   await registration.save();
+
+  emitRegistrationsUpdated(expo._id);
 
   res.status(201).json({ success: true, message: "Registered for the expo", registration });
 };
@@ -104,6 +110,8 @@ export const registerForSession = async (req, res) => {
     return res.status(400).json({ success: false, message: "This session is full" });
   }
 
+  emitRegistrationsUpdated(session.expo);
+
   res.status(201).json({
     success: true,
     message: "Registered for the session",
@@ -144,6 +152,8 @@ export const cancelRegistration = async (req, res) => {
       await decreaseSessionCount(sessionRegistration.session);
     }
   }
+
+  emitRegistrationsUpdated(registration.expo);
 
   res.status(200).json({ success: true, message: "Registration cancelled", registration });
 };

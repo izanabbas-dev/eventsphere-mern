@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CalendarDays, Map as MapIcon, Plus, Store, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import PageHeader from "../../components/PageHeader";
@@ -9,6 +9,7 @@ import Input from "../../components/ui/Input";
 import TagInput from "../../components/ui/TagInput";
 import Spinner from "../../components/ui/Spinner";
 import EmptyState from "../../components/ui/EmptyState";
+import LoadError from "../../components/ui/LoadError";
 import api from "../../api/axios";
 import { fetchMyBooths } from "../../api/exhibitorApi";
 import useAuth from "../../context/useAuth";
@@ -19,13 +20,29 @@ export default function MyBooth() {
   const { user } = useAuth();
   const [booths, setBooths] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
-  useEffect(() => {
+  const loadBooths = useCallback(() => {
     fetchMyBooths(user._id)
-      .then(setBooths)
-      .catch((error) => toast.error(getErrorMessage(error)))
+      .then((list) => {
+        setBooths(list);
+        setFailed(false);
+      })
+      .catch((error) => {
+        toast.error(getErrorMessage(error));
+        setFailed(true);
+      })
       .finally(() => setLoading(false));
   }, [user._id]);
+
+  useEffect(() => {
+    loadBooths();
+  }, [loadBooths]);
+
+  function retry() {
+    setLoading(true);
+    loadBooths();
+  }
 
   return (
     <>
@@ -35,6 +52,8 @@ export default function MyBooth() {
         <div className="flex justify-center py-16 text-indigo-600">
           <Spinner />
         </div>
+      ) : failed ? (
+        <LoadError onRetry={retry} />
       ) : booths.length === 0 ? (
         <Card>
           <EmptyState

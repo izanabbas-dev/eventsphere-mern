@@ -35,6 +35,7 @@ export const resetPasswordRules = [
 export const updateMeRules = [
   body("name").optional().trim().notEmpty().withMessage("Name cannot be empty"),
   body("phone").optional().trim(),
+  body("showContactInfo").optional().isBoolean().withMessage("Show contact info must be true or false").toBoolean(),
 ];
 
 export const updatePasswordRules = [

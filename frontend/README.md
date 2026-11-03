@@ -1,11 +1,22 @@
 # EventSphere - Frontend
 
-React + Vite + Tailwind CSS frontend for EventSphere Management.
+This is the React frontend of EventSphere Management.
 
 ## Run
 
-1. Start the backend (`../backend`) on http://localhost:3000
-2. `npm install`
-3. `npm run dev` and open http://localhost:5173
+1. Start the backend first (see the main README).
+2. Install packages:
+   ```bash
+   npm install
+   ```
+3. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+4. Start the app:
+   ```bash
+   npm run dev
+   ```
+5. Open http://localhost:5173
 
-The API URLs are in `.env` (`VITE_API_URL`, `VITE_SOCKET_URL`).
+Full setup, features and documentation: [main README](../README.md).
