@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { LogOut, Menu } from "lucide-react";
-import Badge from "./ui/Badge";
+import RoleBadge from "./ui/RoleBadge";
 import Avatar from "./ui/Avatar";
 import NotificationBell from "./notifications/NotificationBell";
 
@@ -22,7 +22,7 @@ export default function Topbar({ user, onMenuClick, onLogout }) {
         <Link to="/profile" className="flex items-center gap-3 rounded-xl p-1 hover:bg-slate-100" aria-label="My profile">
           <div className="hidden text-right sm:block">
             <p className="text-sm font-semibold text-slate-900">{user.name}</p>
-            <Badge color="indigo">{user.role}</Badge>
+            <RoleBadge role={user.role} />
           </div>
           <Avatar src={user.avatar} name={user.name} />
         </Link>

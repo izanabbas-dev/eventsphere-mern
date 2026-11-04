@@ -3,7 +3,7 @@ import { ArrowLeft, Mail, MessageSquare, Phone, Send } from "lucide-react";
 import Avatar from "../ui/Avatar";
 import Spinner from "../ui/Spinner";
 import EmptyState from "../ui/EmptyState";
-import RoleBadge from "./RoleBadge";
+import RoleBadge from "../ui/RoleBadge";
 import { formatChatTime, formatTime, toLocalDateKey } from "../../utils/helpers";
 
 const MAX_LENGTH = 2000;

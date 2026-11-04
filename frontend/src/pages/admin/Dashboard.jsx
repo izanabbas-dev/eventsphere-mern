@@ -79,7 +79,7 @@ export default function AdminDashboard() {
   return (
     <>
       <PageHeader
-        title={`Welcome back, ${user.name.split(" ")[0]}`}
+        title={`Welcome back, ${user.name}`}
         subtitle="Here is what is happening across your expos."
         actions={
           <Button onClick={() => setFormOpen(true)}>
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
         </div>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="p-0!">
           <ListHeader title="Upcoming expos" linkTo="/admin/expos" linkText="All expos" />
           {upcoming.length === 0 ? (

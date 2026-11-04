@@ -42,3 +42,11 @@ a:focus-visible,
 button:focus-visible {
   @apply outline-2 outline-offset-2 outline-indigo-600;
 }
+
+/* Scrolls sideways on small screens but shows no scrollbar (used by Tabs) */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

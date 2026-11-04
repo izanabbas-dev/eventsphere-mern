@@ -7,12 +7,11 @@ import Card from "../../components/ui/Card";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import Avatar from "../../components/ui/Avatar";
-import RoleBadge from "../../components/chat/RoleBadge";
+import RoleBadge from "../../components/ui/RoleBadge";
 import PasswordRules from "../../components/PasswordRules";
 import api from "../../api/axios";
 import useAuth from "../../context/useAuth";
-import { PASSWORD_MIN_LENGTH } from "../../utils/constants";
-import { getErrorMessage, getFieldErrors } from "../../utils/helpers";
+import { getErrorMessage, getFieldErrors, getPasswordError } from "../../utils/helpers";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -24,7 +23,7 @@ export default function Profile() {
     <>
       <PageHeader title="My account" subtitle="Your photo, personal details, privacy and password." />
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6">
           <AvatarCard />
           {user.role === "exhibitor" && (
@@ -88,7 +87,7 @@ function PrivacyCard() {
                 {user.role === "exhibitor"
                   ? "When on, attendees see your company contact email and phone (or your account email and phone if those are empty) on your company page and in chats. When off, they are hidden."
                   : "When off, other users cannot see your email and phone in chats."}{" "}
-                Organizers (admins) can always see them.
+                Admins can always see them.
               </p>
             </div>
             <button
@@ -276,9 +275,8 @@ function PasswordCard() {
 
     const newErrors = {};
     if (!form.currentPassword) newErrors.currentPassword = "Current password is required";
-    if (form.newPassword.length < PASSWORD_MIN_LENGTH) {
-      newErrors.newPassword = `Password must be at least ${PASSWORD_MIN_LENGTH} characters`;
-    }
+    const passwordError = getPasswordError(form.newPassword);
+    if (passwordError) newErrors.newPassword = passwordError;
     if (form.confirmPassword !== form.newPassword) newErrors.confirmPassword = "Passwords do not match";
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;

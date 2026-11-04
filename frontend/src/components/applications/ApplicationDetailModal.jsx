@@ -231,7 +231,7 @@ function Details({ application, downloadingId, onDownload, actionBox }) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
         {/* Left: company info */}
         <div className="space-y-6">
           <Section title="About the company">

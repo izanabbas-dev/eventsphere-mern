@@ -157,7 +157,7 @@ export default function ExpoReport({ expoId }) {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChartCard title="Attendees per day" subtitle="New registrations each day" isEmpty={attendeeData.length === 0} className="lg:col-span-2">
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={attendeeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

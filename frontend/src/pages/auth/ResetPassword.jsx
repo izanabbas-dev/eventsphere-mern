@@ -6,8 +6,7 @@ import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import PasswordRules from "../../components/PasswordRules";
 import api from "../../api/axios";
-import { PASSWORD_MIN_LENGTH } from "../../utils/constants";
-import { getErrorMessage, getFieldErrors } from "../../utils/helpers";
+import { getErrorMessage, getFieldErrors, getPasswordError } from "../../utils/helpers";
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -26,9 +25,8 @@ export default function ResetPassword() {
     e.preventDefault();
 
     const newErrors = {};
-    if (form.password.length < PASSWORD_MIN_LENGTH) {
-      newErrors.password = `Password must be at least ${PASSWORD_MIN_LENGTH} characters`;
-    }
+    const passwordError = getPasswordError(form.password);
+    if (passwordError) newErrors.password = passwordError;
     if (form.confirmPassword !== form.password) newErrors.confirmPassword = "Passwords do not match";
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;

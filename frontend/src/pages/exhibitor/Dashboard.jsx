@@ -87,7 +87,7 @@ export default function ExhibitorDashboard() {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="p-0!">
           <ListHeader title="My booths" linkTo="/exhibitor/booth" linkText="Manage" />
           {booths.length === 0 ? (

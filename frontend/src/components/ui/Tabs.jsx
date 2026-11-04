@@ -1,8 +1,8 @@
 // tabs: [{ value: "overview", label: "Overview" }]
 export default function Tabs({ tabs, active, onChange }) {
   return (
-    <div className="overflow-x-auto border-b border-slate-200">
-      <div role="tablist" className="flex min-w-max gap-1">
+    <div className="no-scrollbar overflow-x-auto overflow-y-hidden">
+      <div role="tablist" className="flex w-max min-w-full gap-1 border-b border-slate-200">
         {tabs.map((tab) => {
           const selected = tab.value === active;
           return (

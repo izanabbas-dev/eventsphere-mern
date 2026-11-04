@@ -5,6 +5,7 @@ import PageHeader from "../../components/PageHeader";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
+import RoleBadge from "../../components/ui/RoleBadge";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Spinner from "../../components/ui/Spinner";
@@ -16,7 +17,6 @@ import { USER_ROLES } from "../../utils/constants";
 import { formatDate, getErrorMessage, getInitials } from "../../utils/helpers";
 
 const roleOptions = USER_ROLES.map((r) => ({ value: r, label: r[0].toUpperCase() + r.slice(1) }));
-const roleColors = { admin: "indigo", exhibitor: "amber", attendee: "gray" };
 
 export default function AdminUsers() {
   const { user: me } = useAuth();
@@ -122,7 +122,7 @@ export default function AdminUsers() {
                       <UserInfo user={u} isMe={u._id === me._id} />
                     </td>
                     <td className="px-5 py-4">
-                      <Badge color={roleColors[u.role]}>{u.role}</Badge>
+                      <RoleBadge role={u.role} />
                     </td>
                     <td className="px-5 py-4">
                       <StatusBadge active={u.isActive} />
@@ -143,13 +143,15 @@ export default function AdminUsers() {
               <Card key={u._id} className="p-5!">
                 <UserInfo user={u} isMe={u._id === me._id} />
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge color={roleColors[u.role]}>{u.role}</Badge>
+                  <RoleBadge role={u.role} />
                   <StatusBadge active={u.isActive} />
                   <span className="text-xs text-slate-500">Joined {formatDate(u.createdAt)}</span>
                 </div>
-                <div className="mt-4 flex justify-end border-t border-slate-100 pt-4">
-                  <ToggleButton user={u} isMe={u._id === me._id} onClick={() => setChangingUser(u)} />
-                </div>
+                {u._id !== me._id && (
+                  <div className="mt-4 flex justify-end border-t border-slate-100 pt-4">
+                    <ToggleButton user={u} isMe={false} onClick={() => setChangingUser(u)} />
+                  </div>
+                )}
               </Card>
             ))}
           </div>

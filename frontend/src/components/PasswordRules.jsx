@@ -1,10 +1,10 @@
 import { Check, X } from "lucide-react";
-import { PASSWORD_MIN_LENGTH } from "../utils/constants";
+import { getPasswordRules } from "../utils/helpers";
 
 // Live checklist under the password fields
 export default function PasswordRules({ password, confirmPassword }) {
   const rules = [
-    { text: `At least ${PASSWORD_MIN_LENGTH} characters`, ok: password.length >= PASSWORD_MIN_LENGTH },
+    ...getPasswordRules(password),
     { text: "Passwords match", ok: password.length > 0 && password === confirmPassword },
   ];
 

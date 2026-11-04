@@ -82,7 +82,7 @@ export default function ExhibitorProfile() {
         subtitle={`Profile ${Math.round((doneCount / checklist.length) * 100)}% complete. Attendees and organizers see this information.`}
       />
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="min-w-0 lg:col-span-2">
           <CompanyForm profile={profile} onSaved={(saved) => setProfile((p) => ({ ...p, ...saved }))} />
         </div>

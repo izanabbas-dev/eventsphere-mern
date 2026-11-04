@@ -1,9 +1,21 @@
 import { body } from "express-validator";
 
+// Same password rules for register, reset and change password
+const strongPassword = (field) =>
+  body(field)
+    .isLength({ min: 8 })
+    .withMessage("Password must be at least 8 characters")
+    .matches(/[A-Z]/)
+    .withMessage("Password must contain an uppercase letter")
+    .matches(/[a-z]/)
+    .withMessage("Password must contain a lowercase letter")
+    .matches(/[0-9]/)
+    .withMessage("Password must contain a number");
+
 export const registerRules = [
   body("name").trim().notEmpty().withMessage("Name is required"),
   body("email").trim().toLowerCase().isEmail().withMessage("Please enter a valid email"),
-  body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+  strongPassword("password"),
   body("role")
     .optional()
     .isIn(["exhibitor", "attendee"])
@@ -29,7 +41,7 @@ export const forgotPasswordRules = [
 ];
 
 export const resetPasswordRules = [
-  body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+  strongPassword("password"),
 ];
 
 export const updateMeRules = [
@@ -40,5 +52,5 @@ export const updateMeRules = [
 
 export const updatePasswordRules = [
   body("currentPassword").notEmpty().withMessage("Current password is required"),
-  body("newPassword").isLength({ min: 6 }).withMessage("New password must be at least 6 characters"),
+  strongPassword("newPassword"),
 ];

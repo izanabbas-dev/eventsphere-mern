@@ -2,7 +2,7 @@ import { MessagesSquare } from "lucide-react";
 import Avatar from "../ui/Avatar";
 import Spinner from "../ui/Spinner";
 import EmptyState from "../ui/EmptyState";
-import RoleBadge from "./RoleBadge";
+import RoleBadge from "../ui/RoleBadge";
 import { isUnread } from "../../api/chatApi";
 import { formatChatTime } from "../../utils/helpers";
 

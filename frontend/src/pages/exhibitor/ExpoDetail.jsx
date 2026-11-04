@@ -145,7 +145,7 @@ export default function ExhibitorExpoDetail() {
 
       {/* Expo info */}
       <Card className="mb-6 overflow-hidden p-0!">
-        {expo.banner && <img src={fileUrl(expo.banner)} alt="" className="h-40 w-full object-cover sm:h-56" />}
+        {expo.banner && <img src={fileUrl(expo.banner)} alt="" className="aspect-[14/3] w-full object-cover" />}
         <div className="p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">{expo.title}</h1>
@@ -174,7 +174,7 @@ export default function ExhibitorExpoDetail() {
         </div>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="min-w-0 lg:col-span-2">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-lg font-semibold text-slate-900">Floor plan</h2>

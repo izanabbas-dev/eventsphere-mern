@@ -9,8 +9,8 @@ import Button from "../../components/ui/Button";
 import PasswordRules from "../../components/PasswordRules";
 import useAuth from "../../context/useAuth";
 import api from "../../api/axios";
-import { EXHIBITOR_CATEGORIES, PASSWORD_MIN_LENGTH } from "../../utils/constants";
-import { getDashboardPath, getErrorMessage, getFieldErrors, isValidEmail } from "../../utils/helpers";
+import { EXHIBITOR_CATEGORIES } from "../../utils/constants";
+import { getDashboardPath, getErrorMessage, getFieldErrors, getPasswordError, isValidEmail } from "../../utils/helpers";
 
 const roles = [
   { value: "attendee", label: "Attendee", text: "Visit expos and join sessions", icon: Ticket },
@@ -47,9 +47,8 @@ export default function Register() {
     const newErrors = {};
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!isValidEmail(form.email)) newErrors.email = "Please enter a valid email";
-    if (form.password.length < PASSWORD_MIN_LENGTH) {
-      newErrors.password = `Password must be at least ${PASSWORD_MIN_LENGTH} characters`;
-    }
+    const passwordError = getPasswordError(form.password);
+    if (passwordError) newErrors.password = passwordError;
     if (form.confirmPassword !== form.password) newErrors.confirmPassword = "Passwords do not match";
     if (isExhibitor && !form.companyName.trim()) newErrors.companyName = "Company name is required for exhibitors";
     if (isExhibitor && !form.category) newErrors.category = "Please choose a category";

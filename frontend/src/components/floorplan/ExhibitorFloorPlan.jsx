@@ -30,8 +30,8 @@ export default function ExhibitorFloorPlan({ booths, floorPlan, myId, selectedId
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-3 sm:p-4">
         <div
-          className="grid w-max min-w-full gap-2"
-          style={{ gridTemplateColumns: `1.5rem repeat(${cols}, minmax(4.75rem, 1fr))` }}
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `1.5rem repeat(${cols}, minmax(4rem, 1fr))`, minWidth: `${1.5 + cols * 4.5}rem` }}
         >
           <span />
           {Array.from({ length: cols }, (_, col) => (

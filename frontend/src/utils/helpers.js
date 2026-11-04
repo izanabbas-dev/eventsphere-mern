@@ -1,4 +1,5 @@
 import api from "../api/axios";
+import { PASSWORD_MIN_LENGTH } from "./constants";
 
 // Each role has its own dashboard
 export function getDashboardPath(role) {
@@ -36,6 +37,22 @@ export function getFieldErrors(error) {
 
 export function isValidEmail(email) {
   return /^\S+@\S+\.\S+$/.test(email);
+}
+
+// Same password rules as the backend
+export function getPasswordRules(password) {
+  return [
+    { text: `At least ${PASSWORD_MIN_LENGTH} characters`, ok: password.length >= PASSWORD_MIN_LENGTH },
+    { text: "One uppercase letter", ok: /[A-Z]/.test(password) },
+    { text: "One lowercase letter", ok: /[a-z]/.test(password) },
+    { text: "One number", ok: /[0-9]/.test(password) },
+  ];
+}
+
+// Returns "" when the password is strong enough
+export function getPasswordError(password) {
+  const failed = getPasswordRules(password).find((rule) => !rule.ok);
+  return failed ? `Password needs: ${failed.text.toLowerCase()}` : "";
 }
 
 // Uploaded files are saved as "/uploads/abc.png" on the backend server

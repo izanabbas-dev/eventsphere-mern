@@ -142,13 +142,13 @@ export default function ExpoDetail() {
 
       <Card className="overflow-hidden p-0!">
         {/* Banner */}
-        <div className="relative h-40 bg-linear-to-br from-indigo-500 to-indigo-800 sm:h-56">
+        <div className="relative aspect-[14/3] bg-linear-to-br from-indigo-500 to-indigo-800">
           {expo.banner && <img src={fileUrl(expo.banner)} alt={`${expo.title} banner`} className="h-full w-full object-cover" />}
           <label
-            className="absolute right-4 bottom-4 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white/90 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:bg-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
+            className="absolute right-2 bottom-2 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white/90 p-2 text-sm sm:right-4 sm:bottom-4 sm:px-3 font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:bg-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-white"
           >
             {uploading ? <Spinner size="sm" /> : <ImageUp className="h-4 w-4" aria-hidden="true" />}
-            {expo.banner ? "Change banner" : "Upload banner"}
+            <span className="sr-only sm:not-sr-only">{expo.banner ? "Change banner" : "Upload banner"}</span>
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
@@ -185,7 +185,7 @@ export default function ExpoDetail() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 lg:shrink-0">
               <ExpoStatusSelect expo={expo} onChanged={loadExpo} />
               <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
                 <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
@@ -245,7 +245,7 @@ function Overview({ expo }) {
   ];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <Card className="lg:col-span-2">
         <h2 className="text-lg font-semibold text-slate-900">About this expo</h2>
         <p className="mt-3 text-sm leading-relaxed whitespace-pre-line text-slate-600">

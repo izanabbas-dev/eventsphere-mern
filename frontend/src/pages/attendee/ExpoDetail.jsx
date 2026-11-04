@@ -94,7 +94,7 @@ export default function AttendeeExpoDetail() {
       </Link>
 
       <Card className="mb-6 overflow-hidden p-0!">
-        {expo.banner && <img src={fileUrl(expo.banner)} alt="" className="h-40 w-full object-cover sm:h-56" />}
+        {expo.banner && <img src={fileUrl(expo.banner)} alt="" className="aspect-[14/3] w-full object-cover" />}
         <div className="p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">{expo.title}</h1>

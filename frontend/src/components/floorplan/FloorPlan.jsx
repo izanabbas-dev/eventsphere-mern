@@ -94,8 +94,8 @@ export default function FloorPlan({ expoId }) {
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div
-          className="grid w-max min-w-full gap-2"
-          style={{ gridTemplateColumns: `2rem repeat(${cols}, minmax(5.5rem, 1fr))` }}
+          className="grid gap-2"
+          style={{ gridTemplateColumns: `2rem repeat(${cols}, minmax(5.5rem, 1fr))`, minWidth: `${2 + cols * 6}rem` }}
         >
           {/* Column numbers */}
           <span />
