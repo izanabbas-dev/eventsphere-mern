@@ -4,7 +4,15 @@ import ExhibitorApplication from "../models/ExhibitorApplication.js";
 import Booth from "../models/Booth.js";
 import Expo from "../models/Expo.js";
 import User from "../models/User.js";
-import { getFileUrl, deleteFile, deletePrivateFile, PRIVATE_FOLDER } from "../middleware/upload.js";
+import {
+  saveImage,
+  saveDocument,
+  getDocumentUrl,
+  deleteFile,
+  deletePrivateFile,
+  discardFiles,
+  PRIVATE_FOLDER,
+} from "../middleware/upload.js";
 import { saveBoothVisit } from "../utils/boothHelpers.js";
 import { isAdmin, escapeRegex, canSeeContact } from "../utils/helpers.js";
 
@@ -138,12 +146,12 @@ export const uploadLogo = async (req, res) => {
   const profile = await ExhibitorProfile.findOne({ user: req.user._id });
 
   if (!profile) {
-    await deleteFile(getFileUrl(req.file), req.user._id);
+    await discardFiles([req.file]);
     return res.status(404).json({ success: false, message: "Exhibitor profile not found" });
   }
 
   const oldLogo = profile.logo;
-  profile.logo = getFileUrl(req.file);
+  profile.logo = await saveImage(req.file, "logos");
   await profile.save();
   await deleteFile(oldLogo, req.user._id);
 
@@ -158,13 +166,13 @@ export const uploadDocuments = async (req, res) => {
   const profile = await ExhibitorProfile.findOne({ user: req.user._id });
 
   if (!profile) {
-    for (const file of req.files) await deletePrivateFile(file.filename);
+    await discardFiles(req.files);
     return res.status(404).json({ success: false, message: "Exhibitor profile not found" });
   }
 
-  req.files.forEach((file) => {
-    profile.documents.push({ name: file.originalname, fileName: file.filename });
-  });
+  for (const file of req.files) {
+    profile.documents.push({ name: file.originalname, fileName: await saveDocument(file) });
+  }
   await profile.save();
 
   res.status(200).json({ success: true, message: "Documents uploaded", documents: profile.documents });
@@ -180,6 +188,19 @@ export const downloadDocument = async (req, res) => {
 
   if (!document || !document.fileName) {
     return res.status(404).json({ success: false, message: "Document not found" });
+  }
+
+  const cloudUrl = getDocumentUrl(document.fileName);
+
+  if (cloudUrl) {
+    const response = await fetch(cloudUrl);
+    if (!response.ok) {
+      return res.status(404).json({ success: false, message: "File is missing on the server" });
+    }
+
+    res.attachment(document.name);
+    res.type(response.headers.get("content-type") || "application/octet-stream");
+    return res.send(Buffer.from(await response.arrayBuffer()));
   }
 
   const filePath = path.resolve(PRIVATE_FOLDER, path.basename(document.fileName));

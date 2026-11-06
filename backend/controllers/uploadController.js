@@ -1,4 +1,4 @@
-import { getFileUrl, deleteFile } from "../middleware/upload.js";
+import { saveImage, deleteFile } from "../middleware/upload.js";
 
 export const uploadAvatar = async (req, res) => {
   if (!req.file) {
@@ -7,7 +7,7 @@ export const uploadAvatar = async (req, res) => {
 
   const oldAvatar = req.user.avatar;
 
-  req.user.avatar = getFileUrl(req.file);
+  req.user.avatar = await saveImage(req.file, "avatars");
   await req.user.save();
   await deleteFile(oldAvatar, req.user._id);
 

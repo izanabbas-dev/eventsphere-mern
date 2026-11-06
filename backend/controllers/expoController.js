@@ -9,7 +9,7 @@ import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
 import { emitToExpo } from "../utils/socket.js";
 import { createNotifications } from "../utils/notify.js";
-import { getFileUrl, deleteFile } from "../middleware/upload.js";
+import { saveImage, deleteFile, discardFiles } from "../middleware/upload.js";
 import { isAdmin, escapeRegex } from "../utils/helpers.js";
 
 const expoFields = ["title", "description", "theme", "startDate", "endDate", "location"];
@@ -179,12 +179,12 @@ export const uploadExpoBanner = async (req, res) => {
   const expo = await Expo.findById(req.params.id);
 
   if (!expo) {
-    await deleteFile(getFileUrl(req.file));
+    await discardFiles([req.file]);
     return res.status(404).json({ success: false, message: "Expo not found" });
   }
 
   const oldBanner = expo.banner;
-  expo.banner = getFileUrl(req.file);
+  expo.banner = await saveImage(req.file, "banners");
   await expo.save();
   await deleteFile(oldBanner);
 
