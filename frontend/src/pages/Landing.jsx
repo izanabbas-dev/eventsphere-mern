@@ -20,7 +20,7 @@ import Badge from "../components/ui/Badge";
 import Spinner from "../components/ui/Spinner";
 import api from "../api/axios";
 import useAuth from "../context/useAuth";
-import { formatDate, getDashboardPath, toInputDate } from "../utils/helpers";
+import { fileUrl, formatDate, getDashboardPath, toInputDate } from "../utils/helpers";
 
 async function fetchNextExpo() {
   const res = await api.get("/expos", { params: { status: "published" } });
@@ -208,6 +208,18 @@ function SectionTitle({ title, subtitle }) {
   );
 }
 
+function ExpoBanner({ expo, className }) {
+  if (expo.banner) {
+    return <img src={fileUrl(expo.banner)} alt="" className={`${className} w-full object-cover`} />;
+  }
+
+  return (
+    <div className={`${className} flex items-center justify-center bg-linear-to-br from-indigo-500 to-indigo-800 text-white`}>
+      <CalendarDays className="h-10 w-10 opacity-80" aria-hidden="true" />
+    </div>
+  );
+}
+
 function UpcomingExpos() {
   const { user } = useAuth();
   const [expos, setExpos] = useState([]);
@@ -238,21 +250,24 @@ function UpcomingExpos() {
               key={expo._id}
               to={user ? `${getDashboardPath(user.role)}/expos/${expo._id}` : "/login"}
               state={user ? undefined : { expoId: expo._id }}
-              className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-md"
+              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-md"
             >
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="font-semibold break-words text-slate-900 group-hover:text-indigo-700">{expo.title}</h3>
-                {expo.status === "ongoing" && <Badge status="ongoing" />}
-              </div>
-              <div className="mt-3 space-y-1.5 text-sm text-slate-600">
-                <p className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
-                  {formatDate(expo.startDate)} - {formatDate(expo.endDate)}
-                </p>
-                <p className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
-                  <span className="truncate">{expo.location}</span>
-                </p>
+              <ExpoBanner expo={expo} className="h-36" />
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="font-semibold break-words text-slate-900 group-hover:text-indigo-700">{expo.title}</h3>
+                  {expo.status === "ongoing" && <Badge status="ongoing" />}
+                </div>
+                <div className="mt-3 space-y-1.5 text-sm text-slate-600">
+                  <p className="flex items-center gap-2">
+                    <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                    {formatDate(expo.startDate)} - {formatDate(expo.endDate)}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                    <span className="truncate">{expo.location}</span>
+                  </p>
+                </div>
               </div>
             </Link>
           ))}
@@ -299,6 +314,7 @@ function NextExpoCard() {
           </div>
         ) : (
           <>
+            <ExpoBanner expo={expo} className="mb-5 h-36 rounded-xl" />
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-xs font-semibold tracking-wider text-indigo-600 uppercase">Next expo</p>
