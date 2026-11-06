@@ -8,8 +8,6 @@ import { getFileUrl, deleteFile, deletePrivateFile, PRIVATE_FOLDER } from "../mi
 import { saveBoothVisit } from "../utils/boothHelpers.js";
 import { isAdmin, escapeRegex, canSeeContact } from "../utils/helpers.js";
 
-// Public contact of a profile (plain object). An empty company email or phone falls back
-// to the exhibitor's account email and phone. Both are removed when the owner hides them.
 const applyContactPrivacy = (req, profile, owner) => {
   const contact = profile.contact || {};
 
@@ -25,11 +23,9 @@ const applyContactPrivacy = (req, profile, owner) => {
   return profile;
 };
 
-// Logo is changed with POST /api/exhibitors/profile/logo, not here
 const profileFields = ["companyName", "description", "category", "website", "productsServices"];
 const contactFields = ["person", "email", "phone", "address"];
 
-// PUT /api/exhibitors/profile
 export const updateMyProfile = async (req, res) => {
   const profile = await ExhibitorProfile.findOne({ user: req.user._id });
 
@@ -41,7 +37,6 @@ export const updateMyProfile = async (req, res) => {
     if (req.body[field] !== undefined) profile[field] = req.body[field];
   });
 
-  // Update only the contact fields that were sent, keep the others
   if (req.body.contact) {
     contactFields.forEach((field) => {
       if (req.body.contact[field] !== undefined) profile.contact[field] = req.body.contact[field];
@@ -53,8 +48,6 @@ export const updateMyProfile = async (req, res) => {
   res.status(200).json({ success: true, message: "Profile updated", profile });
 };
 
-// GET /api/expos/:expoId/exhibitors?search=iot&category=Technology
-// Exhibitors with an approved application or a booked booth in this expo
 export const getExpoExhibitors = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -70,7 +63,6 @@ export const getExpoExhibitors = async (req, res) => {
     ...bookedBooths.map((booth) => booth.exhibitor),
   ];
 
-  // Skip disabled accounts
   const activeExhibitors = await User.find({ _id: { $in: exhibitorIds }, role: "exhibitor", isActive: true }).select(
     "_id role email phone showContactInfo"
   );
@@ -88,7 +80,6 @@ export const getExpoExhibitors = async (req, res) => {
     filter.$or = [{ companyName: searchRegex }, { description: searchRegex }, { productsServices: searchRegex }];
   }
 
-  // Documents are private, so they are not sent
   const profiles = await ExhibitorProfile.find(filter).select("-documents").sort({ companyName: 1 }).lean();
 
   profiles.forEach((profile) => {
@@ -102,8 +93,6 @@ export const getExpoExhibitors = async (req, res) => {
   res.status(200).json({ success: true, count: profiles.length, exhibitors: profiles });
 };
 
-// GET /api/exhibitors/:id?expoId=...
-// :id is the exhibitor's user id. With expoId, their booth in that expo is also sent.
 export const getExhibitorProfile = async (req, res) => {
   const exhibitor = await User.findById(req.params.id);
 
@@ -130,7 +119,6 @@ export const getExhibitorProfile = async (req, res) => {
       "boothNumber hall position size"
     );
 
-    // Count this view as a booth visit when an attendee opens the profile
     if (booth && req.user && req.user.role === "attendee") {
       await saveBoothVisit(booth._id, expo._id, req.user._id, "profile_view");
     }
@@ -142,7 +130,6 @@ export const getExhibitorProfile = async (req, res) => {
   res.status(200).json({ success: true, name: exhibitor.name, profile: profileData, booth, contactHidden });
 };
 
-// POST /api/exhibitors/profile/logo  (form-data field: logo)
 export const uploadLogo = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: "Please choose an image to upload" });
@@ -163,7 +150,6 @@ export const uploadLogo = async (req, res) => {
   res.status(200).json({ success: true, message: "Logo uploaded", logo: profile.logo });
 };
 
-// POST /api/exhibitors/profile/documents  (form-data field: documents, up to 5 files)
 export const uploadDocuments = async (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ success: false, message: "Please choose at least one file to upload" });
@@ -184,8 +170,6 @@ export const uploadDocuments = async (req, res) => {
   res.status(200).json({ success: true, message: "Documents uploaded", documents: profile.documents });
 };
 
-// GET /api/exhibitors/:id/documents/:docId
-// :id is the exhibitor's user id. Only that exhibitor or an admin can download.
 export const downloadDocument = async (req, res) => {
   if (!isAdmin(req) && !req.user._id.equals(req.params.id)) {
     return res.status(403).json({ success: false, message: "You cannot download this document" });
@@ -206,7 +190,6 @@ export const downloadDocument = async (req, res) => {
   });
 };
 
-// DELETE /api/exhibitors/profile/documents/:docId
 export const deleteDocument = async (req, res) => {
   const profile = await ExhibitorProfile.findOne({ user: req.user._id });
   const document = profile && profile.documents.id(req.params.docId);

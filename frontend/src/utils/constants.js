@@ -15,7 +15,6 @@ export const EXHIBITOR_CATEGORIES = [
 
 export const EXPO_STATUSES = ["draft", "published", "ongoing", "completed", "cancelled"];
 
-// Same rules as the backend: which status an expo can move to from its current status
 export const EXPO_NEXT_STATUSES = {
   draft: ["published", "cancelled"],
   published: ["ongoing", "cancelled"],
@@ -28,7 +27,6 @@ export const BOOTH_SIZES = ["small", "medium", "large"];
 
 export const CURRENCY = "Rs";
 
-// An exhibitor can pick this many preferred booths when applying
 export const MAX_PREFERRED_BOOTHS = 3;
 
 export const APPLICATION_STATUSES = ["pending", "approved", "rejected", "withdrawn"];
@@ -41,8 +39,6 @@ export const FEEDBACK_TYPES = ["suggestion", "issue", "complaint", "other"];
 
 export const FEEDBACK_STATUSES = ["open", "in_progress", "resolved"];
 
-// Badge color for each session type
 export const SESSION_TYPE_COLORS = { keynote: "indigo", workshop: "green", panel: "amber", session: "gray" };
 
-// Bookmark reminder choices, in minutes before the session starts
 export const REMIND_OPTIONS = [15, 30, 60];

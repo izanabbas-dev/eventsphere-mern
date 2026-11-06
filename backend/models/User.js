@@ -20,8 +20,6 @@ const userSchema = new mongoose.Schema(
       termsAccepted: { type: Boolean, default: false },
       acceptedAt: { type: Date },
     },
-    // Privacy: can other users (not admins) see this user's email and phone?
-    // Not saved yet = role default: exhibitors and admins share, attendees do not (see canSeeContact)
     showContactInfo: { type: Boolean },
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpire: { type: Date, select: false },
@@ -30,7 +28,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash the password only when it is new or changed
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   this.password = await bcrypt.hash(this.password, 10);
@@ -41,7 +38,6 @@ userSchema.pre("save", async function () {
   }
 });
 
-// True if the password was changed after this token was created
 userSchema.methods.changedPasswordAfter = function (tokenIssuedAt) {
   if (!this.passwordChangedAt) return false;
   return tokenIssuedAt < Math.floor(this.passwordChangedAt.getTime() / 1000);
@@ -57,7 +53,6 @@ userSchema.methods.generateToken = function () {
   });
 };
 
-// Returns the plain token (to send by email); only the hashed version is saved
 userSchema.methods.generateResetToken = function () {
   const resetToken = crypto.randomBytes(20).toString("hex");
   this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");

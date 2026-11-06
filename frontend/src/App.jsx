@@ -3,6 +3,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import GuestRoute from "./components/GuestRoute";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Landing from "./pages/Landing";
+import ExploreExpos from "./pages/public/ExploreExpos";
+import HowItWorks from "./pages/public/HowItWorks";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -40,6 +42,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/expos" element={<ExploreExpos />} />
+      <Route path="/how-it-works" element={<HowItWorks />} />
 
       <Route element={<GuestRoute />}>
         <Route path="/login" element={<Login />} />

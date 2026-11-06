@@ -7,7 +7,6 @@ import Button from "../ui/Button";
 import api from "../../api/axios";
 import { getErrorMessage, getFieldErrors, toInputDate } from "../../utils/helpers";
 
-// Create a new expo, or edit one when "expo" is given
 export default function ExpoFormModal({ expo, onClose, onSaved }) {
   const isEdit = Boolean(expo);
 
@@ -67,7 +66,6 @@ export default function ExpoFormModal({ expo, onClose, onSaved }) {
       onSaved(res.data.expo);
     } catch (error) {
       const fieldErrors = getFieldErrors(error);
-      // Backend names these "floorPlan.rows" and "floorPlan.cols"
       fieldErrors.rows = fieldErrors["floorPlan.rows"];
       fieldErrors.cols = fieldErrors["floorPlan.cols"];
       setErrors(fieldErrors);

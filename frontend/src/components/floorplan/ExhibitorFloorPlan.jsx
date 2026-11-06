@@ -1,7 +1,6 @@
 import { Check, Star } from "lucide-react";
 import { boothColors, legend } from "./boothStyles";
 
-// Read-only floor plan for exhibitors and attendees. The parent loads the booths and decides what a click does.
 export default function ExhibitorFloorPlan({ booths, floorPlan, myId, selectedIds = [], onBoothClick }) {
   const boothAt = {};
   booths.forEach((booth) => {

@@ -9,9 +9,6 @@ import api from "../../api/axios";
 import { useSocketEvent } from "../../context/useSocket";
 import { getErrorMessage } from "../../utils/helpers";
 
-// Read-only floor plan for attendees. Click a booked booth to open the exhibitor's profile.
-// highlightId marks one booth (e.g. on the exhibitor profile page).
-// The parent page must join the expo room (useExpoRoom) to get live updates.
 export default function AttendeeFloorPlan({ expoId, highlightId }) {
   const navigate = useNavigate();
   const [booths, setBooths] = useState([]);
@@ -33,7 +30,6 @@ export default function AttendeeFloorPlan({ expoId, highlightId }) {
     loadBooths();
   }, [loadBooths]);
 
-  // A booth changed: load the fresh floor plan
   useSocketEvent("booth_updated", loadBooths);
 
   function handleBoothClick(booth) {
@@ -41,7 +37,6 @@ export default function AttendeeFloorPlan({ expoId, highlightId }) {
       toast(`Booth ${booth.boothNumber} has no exhibitor yet`);
       return;
     }
-    // Count the visit for the booth traffic report (no need to wait for it)
     api.post(`/booths/${booth._id}/visit`, { source: "floor_plan" }).catch(() => {});
     navigate(`/attendee/exhibitors/${booth.exhibitor._id}?expoId=${expoId}`);
   }

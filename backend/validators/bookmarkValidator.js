@@ -2,7 +2,6 @@ import { body, param } from "express-validator";
 
 export const sessionIdRules = [param("id").isMongoId().withMessage("Invalid session id")];
 
-// Max 1440 minutes (1 day), the reminder job only looks one day ahead
 export const addBookmarkRules = [
   ...sessionIdRules,
   body("remindBeforeMinutes")

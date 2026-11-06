@@ -8,7 +8,6 @@ import { createNotification } from "../utils/notify.js";
 import { freeBooth, findOtherBooth, saveBoothVisit } from "../utils/boothHelpers.js";
 import { isAdmin } from "../utils/helpers.js";
 
-// Returns an error message, or null if the spot is free. Rows and cols start from 0.
 const getPositionError = async (expo, row, col, boothId) => {
   if (row >= expo.floorPlan.rows || col >= expo.floorPlan.cols) {
     return `Position must be inside the floor plan (row 0-${expo.floorPlan.rows - 1}, col 0-${expo.floorPlan.cols - 1})`;
@@ -31,7 +30,6 @@ const isBoothNumberTaken = async (expoId, boothNumber, boothId) => {
   return Booth.exists(filter);
 };
 
-// POST /api/expos/:expoId/booths
 export const createBooth = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -64,8 +62,6 @@ export const createBooth = async (req, res) => {
   res.status(201).json({ success: true, message: "Booth created", booth });
 };
 
-// GET /api/expos/:expoId/booths?status=available
-// Floor plan data: every booth with its status and the exhibitor's company name
 export const getBooths = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -81,7 +77,6 @@ export const getBooths = async (req, res) => {
     .populate("exhibitor", "name")
     .lean();
 
-  // Company names are saved in ExhibitorProfile, not in User
   const exhibitorIds = booths.filter((booth) => booth.exhibitor).map((booth) => booth.exhibitor._id);
   const profiles = await ExhibitorProfile.find({ user: { $in: exhibitorIds } }).select("user companyName");
 
@@ -89,7 +84,6 @@ export const getBooths = async (req, res) => {
     const profile = booth.exhibitor && profiles.find((p) => p.user.equals(booth.exhibitor._id));
     booth.companyName = profile ? profile.companyName : null;
 
-    // Staff phone numbers are private: only admins and the booth owner see them
     const isOwner = req.user && booth.exhibitor && booth.exhibitor._id.equals(req.user._id);
     if (!isAdmin(req) && !isOwner) delete booth.staff;
   });
@@ -97,7 +91,6 @@ export const getBooths = async (req, res) => {
   res.status(200).json({ success: true, count: booths.length, floorPlan: expo.floorPlan, booths });
 };
 
-// PUT /api/booths/:id
 export const updateBooth = async (req, res) => {
   const booth = await Booth.findById(req.params.id);
 
@@ -138,7 +131,6 @@ export const updateBooth = async (req, res) => {
   res.status(200).json({ success: true, message: "Booth updated", booth });
 };
 
-// DELETE /api/booths/:id
 export const deleteBooth = async (req, res) => {
   const booth = await Booth.findById(req.params.id);
 
@@ -166,8 +158,6 @@ export const deleteBooth = async (req, res) => {
   res.status(200).json({ success: true, message: "Booth deleted" });
 };
 
-// PATCH /api/booths/:id/assign
-// Admin can assign an available booth, or confirm a booth reserved by the same exhibitor
 export const assignBooth = async (req, res) => {
   const booth = await Booth.findById(req.params.id);
 
@@ -202,7 +192,6 @@ export const assignBooth = async (req, res) => {
   await booth.save();
   emitBoothUpdated(booth);
 
-  // Link the booth to this exhibitor's application for the expo, if they applied
   await ExhibitorApplication.findOneAndUpdate(
     { expo: booth.expo, exhibitor: exhibitor._id, status: { $in: ["pending", "approved"] } },
     { assignedBooth: booth._id }
@@ -211,8 +200,6 @@ export const assignBooth = async (req, res) => {
   res.status(200).json({ success: true, message: `Booth assigned to ${exhibitor.name}`, booth });
 };
 
-// PATCH /api/booths/:id/unassign
-// Admin makes a booked or reserved booth available again
 export const unassignBooth = async (req, res) => {
   const booth = await Booth.findById(req.params.id);
 
@@ -243,7 +230,6 @@ export const unassignBooth = async (req, res) => {
   res.status(200).json({ success: true, message: "Booth is available again", booth });
 };
 
-// POST /api/booths/:id/reserve
 export const reserveBooth = async (req, res) => {
   const booth = await Booth.findById(req.params.id);
 
@@ -282,7 +268,6 @@ export const reserveBooth = async (req, res) => {
   res.status(200).json({ success: true, message: "Booth reserved", booth: reservedBooth });
 };
 
-// DELETE /api/booths/:id/reserve
 export const cancelReservation = async (req, res) => {
   const booth = await Booth.findById(req.params.id);
 
@@ -299,7 +284,6 @@ export const cancelReservation = async (req, res) => {
   res.status(200).json({ success: true, message: "Reservation cancelled", booth });
 };
 
-// PUT /api/booths/:id/details
 export const updateBoothDetails = async (req, res) => {
   const booth = await Booth.findById(req.params.id);
 
@@ -326,8 +310,6 @@ export const updateBoothDetails = async (req, res) => {
   res.status(200).json({ success: true, message: "Booth details updated", booth });
 };
 
-// POST /api/booths/:id/visit
-// Used for booth traffic in the analytics report
 export const recordBoothVisit = async (req, res) => {
   const booth = await Booth.findById(req.params.id).populate("expo", "status");
 

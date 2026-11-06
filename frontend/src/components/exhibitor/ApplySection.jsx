@@ -12,7 +12,6 @@ import { fetchMyProfile } from "../../api/exhibitorApi";
 import { formatDate, getErrorMessage, getFieldErrors, getProfileChecklist } from "../../utils/helpers";
 import { MAX_PREFERRED_BOOTHS as MAX_PREFERRED } from "../../utils/constants";
 
-// Apply form, or my application status if I already applied
 export default function ApplySection({ expo, application, booths, selectedIds, onRemoveSelected, onChanged }) {
   const hasApplied = application && application.status !== "withdrawn";
 
@@ -43,7 +42,6 @@ function ApplyForm({ expoId, wasWithdrawn, booths, selectedIds, onRemoveSelected
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-  // What my company profile still needs (the organizer reviews it with the application)
   const [missing, setMissing] = useState([]);
 
   useEffect(() => {

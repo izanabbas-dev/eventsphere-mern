@@ -14,7 +14,6 @@ import { isAdmin, escapeRegex } from "../utils/helpers.js";
 
 const expoFields = ["title", "description", "theme", "startDate", "endDate", "location"];
 
-// Which status an expo can move to from its current status
 const nextStatuses = {
   draft: ["published", "cancelled"],
   published: ["ongoing", "cancelled"],
@@ -23,7 +22,6 @@ const nextStatuses = {
   cancelled: [],
 };
 
-// Tells registered attendees and exhibitors (applied or holding a booth) that the expo is removed
 const notifyExpoRemoved = async (expo) => {
   const registrations = await Registration.find({ expo: expo._id, session: null, status: "registered" }).select("attendee");
   const applications = await ExhibitorApplication.find({
@@ -50,7 +48,6 @@ const notifyExpoRemoved = async (expo) => {
   );
 };
 
-// POST /api/expos
 export const createExpo = async (req, res) => {
   const { title, description, theme, startDate, endDate, location, floorPlan } = req.body;
 
@@ -68,8 +65,6 @@ export const createExpo = async (req, res) => {
   res.status(201).json({ success: true, message: "Expo created", expo });
 };
 
-// GET /api/expos?status=published&search=tech
-// Guests and non-admins never see draft expos
 export const getExpos = async (req, res) => {
   const { status, search } = req.query;
 
@@ -92,7 +87,6 @@ export const getExpos = async (req, res) => {
   res.status(200).json({ success: true, count: expos.length, expos });
 };
 
-// GET /api/expos/:id
 export const getExpo = async (req, res) => {
   const expo = await Expo.findById(req.params.id).populate("organizer", "name");
 
@@ -103,8 +97,6 @@ export const getExpo = async (req, res) => {
   res.status(200).json({ success: true, expo });
 };
 
-// PUT /api/expos/:id
-// Status is changed with PATCH /:id/status, not here
 export const updateExpo = async (req, res) => {
   const expo = await Expo.findById(req.params.id);
 
@@ -121,7 +113,6 @@ export const updateExpo = async (req, res) => {
     if (req.body.floorPlan.cols !== undefined) expo.floorPlan.cols = req.body.floorPlan.cols;
   }
 
-  // save() also checks that the end date is after the start date
   await expo.save();
 
   emitToExpo(expo._id, "expo_updated", { expo });
@@ -129,7 +120,6 @@ export const updateExpo = async (req, res) => {
   res.status(200).json({ success: true, message: "Expo updated", expo });
 };
 
-// DELETE /api/expos/:id
 export const deleteExpo = async (req, res) => {
   const expo = await Expo.findById(req.params.id);
 
@@ -137,7 +127,6 @@ export const deleteExpo = async (req, res) => {
     return res.status(404).json({ success: false, message: "Expo not found" });
   }
 
-  // Notify first, because the registrations and booths are deleted below
   await notifyExpoRemoved(expo);
 
   const conversations = await Conversation.find({ expo: expo._id }).select("_id");
@@ -158,7 +147,6 @@ export const deleteExpo = async (req, res) => {
   res.status(200).json({ success: true, message: "Expo deleted" });
 };
 
-// PATCH /api/expos/:id/status
 export const updateExpoStatus = async (req, res) => {
   const expo = await Expo.findById(req.params.id);
 
@@ -183,7 +171,6 @@ export const updateExpoStatus = async (req, res) => {
   res.status(200).json({ success: true, message: `Expo status changed to ${expo.status}`, expo });
 };
 
-// POST /api/expos/:id/banner  (form-data field: banner)
 export const uploadExpoBanner = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: "Please choose an image to upload" });

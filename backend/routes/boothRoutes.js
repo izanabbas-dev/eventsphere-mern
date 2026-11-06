@@ -21,8 +21,6 @@ import {
 
 const router = express.Router();
 
-// Create and list booths are in expoRoutes.js (/api/expos/:expoId/booths)
-
 router.put("/:id", protect, authorize("admin"), updateBoothRules, validate, updateBooth);
 router.delete("/:id", protect, authorize("admin"), boothIdRules, validate, deleteBooth);
 router.patch("/:id/assign", protect, authorize("admin"), assignBoothRules, validate, assignBooth);
@@ -32,7 +30,6 @@ router.post("/:id/reserve", protect, authorize("exhibitor"), boothIdRules, valid
 router.delete("/:id/reserve", protect, authorize("exhibitor"), boothIdRules, validate, cancelReservation);
 router.put("/:id/details", protect, authorize("exhibitor"), boothDetailsRules, validate, updateBoothDetails);
 
-// Any logged-in user
 router.post("/:id/visit", protect, boothVisitRules, validate, recordBoothVisit);
 
 export default router;

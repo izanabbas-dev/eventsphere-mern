@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, CalendarDays, Check, ClipboardList, MapPin, Store, Ticket } from "lucide-react";
-import Logo from "../components/Logo";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  Bell,
+  CalendarClock,
+  CalendarDays,
+  ChartColumn,
+  Check,
+  ClipboardList,
+  LayoutGrid,
+  MapPin,
+  MessageSquare,
+  Store,
+  Ticket,
+} from "lucide-react";
+import PublicLayout from "../layouts/PublicLayout";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
 import Spinner from "../components/ui/Spinner";
@@ -8,11 +22,9 @@ import api from "../api/axios";
 import useAuth from "../context/useAuth";
 import { formatDate, getDashboardPath, toInputDate } from "../utils/helpers";
 
-// The next published expo that has not ended, with its booth, exhibitor and session counts
 async function fetchNextExpo() {
   const res = await api.get("/expos", { params: { status: "published" } });
   const today = toInputDate(new Date());
-  // The list is already sorted by start date
   const expo = res.data.expos.find((item) => toInputDate(item.endDate) >= today);
   if (!expo) return null;
 
@@ -51,31 +63,20 @@ const roleCards = [
   },
 ];
 
+const features = [
+  { icon: LayoutGrid, title: "Interactive floor plan", text: "See every booth and its status on a clear map." },
+  { icon: Store, title: "Booth booking", text: "Exhibitors pick their preferred booths when they apply." },
+  { icon: CalendarClock, title: "Session scheduling", text: "Plan talks, workshops and keynotes day by day." },
+  { icon: MessageSquare, title: "Live chat", text: "Organizers, exhibitors and attendees talk in real time." },
+  { icon: Bell, title: "Real-time notifications", text: "Get updates on applications, sessions and messages." },
+  { icon: ChartColumn, title: "Analytics and reports", text: "Track registrations, booths and visits for every expo." },
+];
+
 export default function Landing() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="absolute inset-x-0 top-0 z-10">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8" aria-label="Top">
-          <Logo />
-          <div className="flex items-center gap-2 sm:gap-3">
-            {user ? (
-              <Button to={getDashboardPath(user.role)}>Go to dashboard</Button>
-            ) : (
-              <>
-                <Button to="/login" variant="ghost">
-                  Log in
-                </Button>
-                <Button to="/register">Sign up</Button>
-              </>
-            )}
-          </div>
-        </nav>
-      </header>
-
-      <main>
-        {/* Hero */}
+    <PublicLayout>
         <section className="relative overflow-hidden bg-linear-to-b from-indigo-100 via-indigo-50 to-white pt-32 pb-20 sm:pt-40 sm:pb-28">
           <div
             className="absolute top-20 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-indigo-300/30 blur-3xl"
@@ -100,14 +101,10 @@ export default function Landing() {
                   </Button>
                 ) : (
                   <>
-                    <Button to="/register" size="lg">
-                      Get started free <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                    <Button to="/expos" size="lg">
+                      Explore expos <ArrowRight className="h-5 w-5" aria-hidden="true" />
                     </Button>
-                    <Button
-                      size="lg"
-                      variant="secondary"
-                      onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-                    >
+                    <Button to="/how-it-works" size="lg" variant="secondary">
                       How it works
                     </Button>
                   </>
@@ -119,8 +116,29 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Roles */}
-        <section id="features" className="py-20 sm:py-24">
+        <section className="py-20 sm:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <SectionTitle title="Features" subtitle="Everything you need to run an expo, in one place." />
+
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((feature) => (
+                <div key={feature.title} className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                    <feature.icon className="h-5 w-5" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-900">{feature.title}</h3>
+                    <p className="mt-1 text-sm text-slate-600">{feature.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <UpcomingExpos />
+
+        <section className="py-20 sm:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Built for everyone at the expo</h2>
@@ -151,15 +169,102 @@ export default function Landing() {
             </div>
           </div>
         </section>
-      </main>
 
-      <footer className="border-t border-slate-200 bg-slate-50">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
-          <Logo />
-          <p className="text-sm text-slate-500">© {new Date().getFullYear()} EventSphere Management. All rights reserved.</p>
-        </div>
-      </footer>
+        <section className="px-4 pb-20 sm:px-6 sm:pb-24 lg:px-8">
+          <div className="mx-auto max-w-7xl rounded-2xl bg-indigo-600 px-6 py-12 text-center sm:px-12">
+            <h2 className="text-2xl font-bold text-white sm:text-3xl">Ready to run your next expo?</h2>
+            <p className="mx-auto mt-3 max-w-xl text-indigo-100">
+              Join EventSphere for free and bring organizers, exhibitors and attendees together.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              {user ? (
+                <Button to={getDashboardPath(user.role)} size="lg" variant="secondary">
+                  Go to dashboard <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                </Button>
+              ) : (
+                <Button to="/register" size="lg" variant="secondary">
+                  Sign up free <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                </Button>
+              )}
+              <Link
+                to="/expos"
+                className="inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold text-white ring-1 ring-white/40 transition-colors hover:bg-white/10"
+              >
+                Explore expos
+              </Link>
+            </div>
+          </div>
+        </section>
+    </PublicLayout>
+  );
+}
+
+function SectionTitle({ title, subtitle }) {
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{title}</h2>
+      <p className="mt-4 text-slate-600">{subtitle}</p>
     </div>
+  );
+}
+
+function UpcomingExpos() {
+  const { user } = useAuth();
+  const [expos, setExpos] = useState([]);
+
+  useEffect(() => {
+    api
+      .get("/expos")
+      .then((res) => {
+        const today = toInputDate(new Date());
+        const list = res.data.expos.filter(
+          (expo) => ["published", "ongoing"].includes(expo.status) && toInputDate(expo.endDate) >= today
+        );
+        setExpos(list.slice(0, 3));
+      })
+      .catch(() => setExpos([]));
+  }, []);
+
+  if (expos.length === 0) return null;
+
+  return (
+    <section className="bg-slate-50 py-20 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <SectionTitle title="Upcoming expos" subtitle="See what is coming up next on EventSphere." />
+
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {expos.map((expo) => (
+            <Link
+              key={expo._id}
+              to={user ? `${getDashboardPath(user.role)}/expos/${expo._id}` : "/login"}
+              state={user ? undefined : { expoId: expo._id }}
+              className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-md"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="font-semibold break-words text-slate-900 group-hover:text-indigo-700">{expo.title}</h3>
+                {expo.status === "ongoing" && <Badge status="ongoing" />}
+              </div>
+              <div className="mt-3 space-y-1.5 text-sm text-slate-600">
+                <p className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                  {formatDate(expo.startDate)} - {formatDate(expo.endDate)}
+                </p>
+                <p className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                  <span className="truncate">{expo.location}</span>
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-10 text-center">
+          <Button to="/expos" variant="secondary">
+            View all expos <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -175,7 +280,6 @@ function NextExpoCard() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Logged in users open the expo in their dashboard, guests sign up first
   const link = user && expo ? `${getDashboardPath(user.role)}/expos/${expo._id}` : "/register";
 
   return (

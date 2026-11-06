@@ -9,15 +9,12 @@ import { addBookmarkRules } from "../validators/bookmarkValidator.js";
 
 const router = express.Router();
 
-// Create and list sessions are in expoRoutes.js (/api/expos/:expoId/sessions)
-
 router.get("/:id", optionalAuth, sessionIdRules, validate, getSession);
 
 router.put("/:id", protect, authorize("admin"), updateSessionRules, validate, updateSession);
 router.patch("/:id/cancel", protect, authorize("admin"), sessionIdRules, validate, cancelSession);
 router.delete("/:id", protect, authorize("admin"), sessionIdRules, validate, deleteSession);
 
-// Attendee: register and bookmark
 router.post("/:id/register", protect, authorize("attendee"), sessionIdRules, validate, registerForSession);
 router.post("/:id/bookmark", protect, authorize("attendee"), addBookmarkRules, validate, addBookmark);
 router.delete("/:id/bookmark", protect, authorize("attendee"), sessionIdRules, validate, removeBookmark);

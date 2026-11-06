@@ -3,11 +3,9 @@ import { X } from "lucide-react";
 
 const widths = { md: "max-w-lg", lg: "max-w-2xl", xl: "max-w-4xl" };
 
-// Popup with a fixed header and footer. Only the body scrolls.
 export default function Modal({ open, onClose, title, children, footer, size = "md" }) {
   const panelRef = useRef(null);
 
-  // Close with the Escape key
   useEffect(() => {
     if (!open) return;
     function handleKey(e) {
@@ -17,14 +15,12 @@ export default function Modal({ open, onClose, title, children, footer, size = "
     return () => document.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
-  // Lock the page scroll and move focus into the modal while it is open
   useEffect(() => {
     if (!open) return;
 
     const body = document.body;
     const oldOverflow = body.style.overflow;
     const oldPadding = body.style.paddingRight;
-    // Keep the page from jumping when its scrollbar disappears
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     body.style.overflow = "hidden";
     if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;

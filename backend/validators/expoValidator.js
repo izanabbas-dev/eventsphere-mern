@@ -1,11 +1,9 @@
 import { body, param, query } from "express-validator";
+import { isSingleValue } from "../utils/helpers.js";
 
 const statuses = ["draft", "published", "ongoing", "completed", "cancelled"];
 
 export const expoIdRules = [param("id").isMongoId().withMessage("Invalid expo id")];
-
-// ?status=a&status=b arrives as an array, so allow only one value
-const isSingleValue = (value) => typeof value === "string";
 
 export const listExpoRules = [
   query("status")

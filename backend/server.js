@@ -10,7 +10,6 @@ const PORT = process.env.PORT || 3000;
 const startServer = async () => {
   await connectDB();
 
-  // Express and socket.io share the same server and port
   const server = http.createServer(app);
   initSocket(server);
 

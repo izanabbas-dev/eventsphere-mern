@@ -16,7 +16,6 @@ const notifyExhibitor = (exhibitorId, title, message) => {
   });
 };
 
-// POST /api/expos/:expoId/applications
 export const applyToExpo = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -29,7 +28,6 @@ export const applyToExpo = async (req, res) => {
     return res.status(400).json({ success: false, message: "Please create your exhibitor profile first" });
   }
 
-  // Remove repeated ids, then make sure every booth belongs to this expo
   const preferredBooths = [...new Set((req.body.preferredBooths || []).map(String))];
   const boothCount = await Booth.countDocuments({ _id: { $in: preferredBooths }, expo: expo._id });
   if (boothCount !== preferredBooths.length) {
@@ -42,7 +40,6 @@ export const applyToExpo = async (req, res) => {
     return res.status(400).json({ success: false, message: "You have already applied to this expo" });
   }
 
-  // A withdrawn application is reused, because only one application per expo is allowed
   if (!application) {
     application = new ExhibitorApplication({ expo: expo._id, exhibitor: req.user._id });
   }
@@ -57,7 +54,6 @@ export const applyToExpo = async (req, res) => {
   res.status(201).json({ success: true, message: "Application submitted", application });
 };
 
-// GET /api/applications/my
 export const getMyApplications = async (req, res) => {
   const applications = await ExhibitorApplication.find({ exhibitor: req.user._id })
     .sort({ createdAt: -1 })
@@ -68,7 +64,6 @@ export const getMyApplications = async (req, res) => {
   res.status(200).json({ success: true, count: applications.length, applications });
 };
 
-// PATCH /api/applications/:id/withdraw
 export const withdrawApplication = async (req, res) => {
   const application = await ExhibitorApplication.findById(req.params.id);
 
@@ -89,7 +84,6 @@ export const withdrawApplication = async (req, res) => {
   res.status(200).json({ success: true, message: "Application withdrawn", application });
 };
 
-// GET /api/expos/:expoId/applications?status=pending
 export const getExpoApplications = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -110,7 +104,6 @@ export const getExpoApplications = async (req, res) => {
   res.status(200).json({ success: true, count: applications.length, applications });
 };
 
-// GET /api/applications/:id
 export const getApplication = async (req, res) => {
   const application = await ExhibitorApplication.findById(req.params.id)
     .populate("expo", "title startDate endDate location status")
@@ -126,8 +119,6 @@ export const getApplication = async (req, res) => {
   res.status(200).json({ success: true, application });
 };
 
-// PATCH /api/applications/:id/approve
-// If boothId is sent, that booth is booked for the exhibitor
 export const approveApplication = async (req, res) => {
   const application = await ExhibitorApplication.findById(req.params.id).populate("expo", "title");
 
@@ -146,7 +137,6 @@ export const approveApplication = async (req, res) => {
       return res.status(400).json({ success: false, message: "Booth not found in this expo" });
     }
 
-    // Booth must be free, or already held (reserved or booked) by this same exhibitor
     const heldBySameExhibitor = booth.exhibitor && booth.exhibitor.equals(application.exhibitor);
     if (booth.status !== "available" && !heldBySameExhibitor) {
       return res.status(400).json({ success: false, message: "Booth is not available" });
@@ -181,7 +171,6 @@ export const approveApplication = async (req, res) => {
   res.status(200).json({ success: true, message: "Application approved", application });
 };
 
-// PATCH /api/applications/:id/reject
 export const rejectApplication = async (req, res) => {
   const application = await ExhibitorApplication.findById(req.params.id).populate("expo", "title");
 

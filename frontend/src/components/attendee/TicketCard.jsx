@@ -2,7 +2,6 @@ import { CalendarDays, MapPin, Ticket } from "lucide-react";
 import Badge from "../ui/Badge";
 import { formatDate } from "../../utils/helpers";
 
-// Expo ticket: expo info on the left, ticket code on the right. "action" goes under the code (e.g. a cancel button).
 export default function TicketCard({ expo, registration, action }) {
   const cancelled = registration.status === "cancelled";
 
@@ -27,7 +26,6 @@ export default function TicketCard({ expo, registration, action }) {
         </div>
       </div>
 
-      {/* Ticket stub with a dashed tear line */}
       <div className="relative flex flex-col items-center justify-center gap-2 border-t-2 border-dashed border-slate-200 bg-white p-5 text-center sm:w-60 sm:border-t-0 sm:border-l-2">
         <span className="absolute -top-3 -left-3 hidden h-6 w-6 rounded-full bg-slate-50 sm:block" aria-hidden="true" />
         <span className="absolute -bottom-3 -left-3 hidden h-6 w-6 rounded-full bg-slate-50 sm:block" aria-hidden="true" />

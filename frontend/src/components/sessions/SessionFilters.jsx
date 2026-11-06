@@ -5,7 +5,6 @@ import Select from "../ui/Select";
 import { SESSION_TYPES } from "../../utils/constants";
 import { formatDayKey, getExpoDays } from "../../utils/helpers";
 
-// Filter bar for a schedule: search, day, type and topic. "action" is an extra button at the end.
 export default function SessionFilters({ expo, sessions, filters, onChange, action }) {
   const topics = [...new Set(sessions.map((s) => s.topic).filter(Boolean))].sort();
 

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
 
-// List of short words, e.g. products. Type and press Enter (or comma) to add.
-export default function TagInput({ label, name, tags, onChange, placeholder = "Type and press Enter", hint }) {
+export default function TagInput({ label, name, tags, onChange, placeholder }) {
   const [text, setText] = useState("");
 
   function addTag() {
@@ -72,7 +71,6 @@ export default function TagInput({ label, name, tags, onChange, placeholder = "T
           </button>
         </div>
       </div>
-      {hint && <p className="mt-1.5 text-sm text-slate-500">{hint}</p>}
     </div>
   );
 }

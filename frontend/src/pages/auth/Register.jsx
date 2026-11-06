@@ -75,14 +75,13 @@ export default function Register() {
     try {
       const user = await register(data);
 
-      // The register route does not take a category, so save it on the new exhibitor profile
       if (isExhibitor) {
         await api.put("/exhibitors/profile", { category: form.category }).catch(() => {
           toast.error("Account created, but the category was not saved. You can add it in My Profile.");
         });
       }
 
-      toast.success("Account created successfully!");
+      toast.success("Account created");
       navigate(getDashboardPath(user.role), { replace: true });
     } catch (error) {
       setErrors(getFieldErrors(error));

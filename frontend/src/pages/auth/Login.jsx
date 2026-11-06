@@ -37,8 +37,9 @@ export default function Login() {
     try {
       const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.name}!`);
-      // Go back to the page they wanted, or to their dashboard
-      navigate(location.state?.from || getDashboardPath(user.role), { replace: true });
+      const dashboard = getDashboardPath(user.role);
+      const expoId = location.state?.expoId;
+      navigate(location.state?.from || (expoId ? `${dashboard}/expos/${expoId}` : dashboard), { replace: true });
     } catch (error) {
       setErrors(getFieldErrors(error));
       toast.error(getErrorMessage(error));

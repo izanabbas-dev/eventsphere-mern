@@ -116,7 +116,7 @@ function ExpoCard({ expo, registered }) {
         </div>
 
         <span className="mt-auto pt-4 text-sm font-semibold text-indigo-600">
-          {registered || expo.status !== "published" ? "View details" : "View & register"} →
+          {registered || expo.status !== "published" ? "View details" : "View & register"}
         </span>
       </div>
     </Link>

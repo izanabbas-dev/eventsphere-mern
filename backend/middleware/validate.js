@@ -1,6 +1,5 @@
 import { validationResult } from "express-validator";
 
-// Runs after the validation rules and stops the request if any rule failed
 const validate = (req, res, next) => {
   const result = validationResult(req);
 

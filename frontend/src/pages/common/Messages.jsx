@@ -12,7 +12,6 @@ import useAuth from "../../context/useAuth";
 import { useSocketEvent } from "../../context/useSocket";
 import { getErrorMessage } from "../../utils/helpers";
 
-// Put this conversation first, with a new last message
 function moveToTop(list, conversationId, lastMessage) {
   const conversation = list.find((c) => c._id === conversationId);
   if (!conversation) return list;
@@ -20,7 +19,6 @@ function moveToTop(list, conversationId, lastMessage) {
   return [updated, ...list.filter((c) => c._id !== conversationId)];
 }
 
-// Two panels like WhatsApp Web. The open chat id is in the URL: /attendee/messages?c=<id>
 export default function Messages() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,7 +26,6 @@ export default function Messages() {
 
   const [conversations, setConversations] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
-  // Messages of the loaded chat. While chat.id is not the open id, the chat is still loading.
   const [chat, setChat] = useState({ id: null, messages: [] });
   const [newChatOpen, setNewChatOpen] = useState(false);
 
@@ -53,7 +50,6 @@ export default function Messages() {
     loadConversations();
   }, [loadConversations]);
 
-  // Load the open chat. The backend also marks its messages as read.
   useEffect(() => {
     if (!activeId) return;
 
@@ -71,21 +67,18 @@ export default function Messages() {
       });
   }, [activeId, setSearchParams]);
 
-  // Live: a message from the other person
   const handleNewMessage = useCallback(
     ({ conversationId, message }) => {
       const isOpen = conversationId === activeId;
 
       if (isOpen) {
         addMessage(conversationId, message);
-        // Opening the messages again marks this one as read on the server
         api.get(`/conversations/${conversationId}/messages`).catch(() => {});
       }
 
       if (conversations.some((c) => c._id === conversationId)) {
         setConversations((list) => moveToTop(list, conversationId, { ...message, isRead: isOpen }));
       } else {
-        // Someone started a new chat with me
         loadConversations();
       }
     },
@@ -110,7 +103,6 @@ export default function Messages() {
     }
   }
 
-  // Exhibitor "New chat": open the old chat or create a new one
   async function handleStartChat(userId, expoId) {
     try {
       const conversation = await startConversation(userId, expoId);
@@ -142,7 +134,6 @@ export default function Messages() {
   return (
     <>
       <div className="flex h-[calc(100dvh-7rem)] min-h-[420px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:h-[calc(100dvh-8rem)]">
-        {/* Left: my conversations (on mobile only when no chat is open) */}
         <aside
           className={`w-full flex-col border-r border-slate-200 md:flex md:w-80 md:shrink-0 ${activeId ? "hidden" : "flex"}`}
           aria-label="Conversations"
@@ -167,7 +158,6 @@ export default function Messages() {
           </div>
         </aside>
 
-        {/* Right: the open chat (on mobile it takes the full width) */}
         <section className={`min-w-0 flex-1 flex-col md:flex ${activeId ? "flex" : "hidden"}`} aria-label="Chat">
           <ChatWindow
             key={activeId || "none"}

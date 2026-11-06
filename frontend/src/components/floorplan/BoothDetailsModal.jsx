@@ -20,7 +20,6 @@ function Detail({ label, children }) {
   );
 }
 
-// Booth info and admin actions: edit, delete, assign, unassign
 export default function BoothDetailsModal({ booth, booths, expoId, onClose, onEdit, onChanged }) {
   const [exhibitors, setExhibitors] = useState([]);
   const [loadingExhibitors, setLoadingExhibitors] = useState(booth.status === "available");
@@ -31,7 +30,6 @@ export default function BoothDetailsModal({ booth, booths, expoId, onClose, onEd
   const isAvailable = booth.status === "available";
   const exhibitorName = booth.companyName || booth.exhibitor?.name;
 
-  // Approved exhibitors of this expo who do not hold a booth yet
   useEffect(() => {
     if (!isAvailable) return;
 
@@ -51,7 +49,6 @@ export default function BoothDetailsModal({ booth, booths, expoId, onClose, onEd
       .finally(() => setLoadingExhibitors(false));
   }, [isAvailable, expoId, booths]);
 
-  // Runs one booth action and reloads the floor plan. Returns true if it worked.
   async function runAction(request) {
     setWorking(true);
     try {

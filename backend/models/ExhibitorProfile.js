@@ -15,7 +15,6 @@ const exhibitorProfileSchema = new mongoose.Schema(
       phone: { type: String, trim: true },
       address: { type: String, trim: true },
     },
-    // Saved in private_uploads, not served as public files
     documents: [
       {
         name: { type: String },
@@ -26,7 +25,6 @@ const exhibitorProfileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Used for keyword search of exhibitors
 exhibitorProfileSchema.index({
   companyName: "text",
   description: "text",

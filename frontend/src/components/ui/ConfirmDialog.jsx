@@ -1,13 +1,11 @@
 import Modal from "./Modal";
 import Button from "./Button";
 
-// "Are you sure?" popup before a risky action like delete
 export default function ConfirmDialog({
   open,
   title,
   message,
   confirmText = "Confirm",
-  variant = "danger",
   loading = false,
   onConfirm,
   onClose,
@@ -22,7 +20,7 @@ export default function ConfirmDialog({
           <Button variant="secondary" onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button variant={variant} onClick={onConfirm} loading={loading}>
+          <Button variant="danger" onClick={onConfirm} loading={loading}>
             {confirmText}
           </Button>
         </>

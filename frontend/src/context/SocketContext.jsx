@@ -5,7 +5,6 @@ import { SocketContext } from "./useSocket";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
-// One live connection for the whole app, only while the user is logged in
 export function SocketProvider({ children }) {
   const { token } = useAuth();
   const [socket, setSocket] = useState(null);

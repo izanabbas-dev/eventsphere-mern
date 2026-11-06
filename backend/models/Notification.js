@@ -10,7 +10,6 @@ const notificationSchema = new mongoose.Schema(
       enum: ["info", "application", "registration", "session", "session_reminder", "message", "system"],
       default: "info",
     },
-    // Frontend page to open, e.g. "/sessions/<id>"
     link: { type: String, default: "" },
     isRead: { type: Boolean, default: false },
   },

@@ -3,10 +3,8 @@ const iconColors = {
   green: "bg-green-50 text-green-600",
   amber: "bg-amber-50 text-amber-600",
   sky: "bg-sky-50 text-sky-600",
-  rose: "bg-rose-50 text-rose-600",
 };
 
-// Small card with one big number: <StatCard label="Users" value={12} icon={Users} />
 export default function StatCard({ label, value, icon: Icon, hint, color = "indigo" }) {
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

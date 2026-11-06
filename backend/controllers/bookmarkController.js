@@ -1,8 +1,6 @@
 import Bookmark from "../models/Bookmark.js";
 import Session from "../models/Session.js";
 
-// POST /api/sessions/:id/bookmark
-// Bookmarking again only changes the reminder time
 export const addBookmark = async (req, res) => {
   const session = await Session.findById(req.params.id).populate("expo", "status");
 
@@ -35,7 +33,6 @@ export const addBookmark = async (req, res) => {
   res.status(201).json({ success: true, message: "Session bookmarked", bookmark });
 };
 
-// DELETE /api/sessions/:id/bookmark
 export const removeBookmark = async (req, res) => {
   const bookmark = await Bookmark.findOneAndDelete({ user: req.user._id, session: req.params.id });
 
@@ -46,13 +43,11 @@ export const removeBookmark = async (req, res) => {
   res.status(200).json({ success: true, message: "Bookmark removed" });
 };
 
-// GET /api/bookmarks/my
 export const getMyBookmarks = async (req, res) => {
   const bookmarks = await Bookmark.find({ user: req.user._id })
     .populate("session", "title type topic speakers location startTime endTime status")
     .populate("expo", "title");
 
-  // Sort by the session's start time (populate cannot sort the outer list)
   const validBookmarks = bookmarks.filter((bookmark) => bookmark.session);
   validBookmarks.sort((a, b) => a.session.startTime - b.session.startTime);
 

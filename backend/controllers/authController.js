@@ -4,14 +4,12 @@ import ExhibitorProfile from "../models/ExhibitorProfile.js";
 import sendEmail from "../utils/sendEmail.js";
 import { defaultShowContact } from "../utils/helpers.js";
 
-// Sends the token and user (without password) in one response
 const sendTokenResponse = (user, statusCode, res, message) => {
   const token = user.generateToken();
   user.password = undefined;
   res.status(statusCode).json({ success: true, message, token, user });
 };
 
-// POST /api/auth/register
 export const register = async (req, res) => {
   const { name, email, password, phone, companyName } = req.body;
   const role = req.body.role || "attendee";
@@ -35,7 +33,6 @@ export const register = async (req, res) => {
     try {
       await ExhibitorProfile.create({ user: user._id, companyName });
     } catch (error) {
-      // Don't keep a half-created exhibitor
       await User.findByIdAndDelete(user._id);
       throw error;
     }
@@ -44,7 +41,6 @@ export const register = async (req, res) => {
   sendTokenResponse(user, 201, res, "Registration successful");
 };
 
-// POST /api/auth/login
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -61,7 +57,6 @@ export const login = async (req, res) => {
   sendTokenResponse(user, 200, res, "Login successful");
 };
 
-// GET /api/auth/me
 export const getMe = async (req, res) => {
   let profile = null;
   if (req.user.role === "exhibitor") {
@@ -71,8 +66,6 @@ export const getMe = async (req, res) => {
   res.status(200).json({ success: true, user: req.user, profile });
 };
 
-// PUT /api/auth/me
-// Only name, phone and the privacy setting can be changed here. Avatar is changed with POST /api/uploads/avatar.
 export const updateMe = async (req, res) => {
   const { name, phone, showContactInfo } = req.body;
   const user = req.user;
@@ -86,7 +79,6 @@ export const updateMe = async (req, res) => {
   res.status(200).json({ success: true, message: "Profile updated", user });
 };
 
-// POST /api/auth/forgot-password
 export const forgotPassword = async (req, res) => {
   const message = "If this email is registered, a reset link has been sent";
   const user = await User.findOne({ email: req.body.email });
@@ -109,7 +101,6 @@ export const forgotPassword = async (req, res) => {
       text: `Hello ${user.name},\n\nClick the link below to reset your password. It is valid for 15 minutes.\n\n${resetUrl}\n\nIf you did not ask for this, ignore this email.`,
     });
   } catch (error) {
-    // Log it, but send the same reply, so nobody can check which emails exist
     console.error("Email error:", error.message);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
@@ -119,7 +110,6 @@ export const forgotPassword = async (req, res) => {
   res.status(200).json({ success: true, message });
 };
 
-// PUT /api/auth/reset-password/:token
 export const resetPassword = async (req, res) => {
   const hashedToken = crypto.createHash("sha256").update(req.params.token).digest("hex");
 
@@ -140,7 +130,6 @@ export const resetPassword = async (req, res) => {
   sendTokenResponse(user, 200, res, "Password reset successful");
 };
 
-// PUT /api/auth/update-password
 export const updatePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 

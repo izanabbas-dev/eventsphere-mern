@@ -2,7 +2,6 @@ import Feedback from "../models/Feedback.js";
 import Expo from "../models/Expo.js";
 import { createNotification } from "../utils/notify.js";
 
-// POST /api/feedback
 export const createFeedback = async (req, res) => {
   const { type, subject, message, rating, expoId } = req.body;
 
@@ -25,14 +24,12 @@ export const createFeedback = async (req, res) => {
   res.status(201).json({ success: true, message: "Feedback submitted", feedback });
 };
 
-// GET /api/feedback/my
 export const getMyFeedback = async (req, res) => {
   const feedback = await Feedback.find({ user: req.user._id }).populate("expo", "title").sort({ createdAt: -1 });
 
   res.status(200).json({ success: true, count: feedback.length, feedback });
 };
 
-// GET /api/feedback?status=open&type=issue
 export const getAllFeedback = async (req, res) => {
   const filter = {};
   if (req.query.status) filter.status = req.query.status;
@@ -46,7 +43,6 @@ export const getAllFeedback = async (req, res) => {
   res.status(200).json({ success: true, count: feedback.length, feedback });
 };
 
-// PATCH /api/feedback/:id
 export const updateFeedback = async (req, res) => {
   const feedback = await Feedback.findById(req.params.id);
 

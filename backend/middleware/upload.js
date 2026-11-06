@@ -3,14 +3,12 @@ import path from "path";
 import crypto from "crypto";
 import fs from "fs/promises";
 
-// Avatar, logo and banner go to the public folder. Exhibitor documents go to the private one.
 const PUBLIC_FOLDER = "uploads";
 export const PRIVATE_FOLDER = "private_uploads";
 
 const imageTypes = ["image/jpeg", "image/png", "image/webp"];
 const imageExtensions = [".jpg", ".jpeg", ".png", ".webp"];
 
-// File name starts with the user id, so we can check the owner before deleting it
 const makeStorage = (folder) => {
   return multer.diskStorage({
     destination: folder,
@@ -22,7 +20,6 @@ const makeStorage = (folder) => {
   });
 };
 
-// Checks both the file type and the extension
 const makeFileFilter = (allowedTypes, allowedExtensions) => {
   return (req, file, cb) => {
     const extension = path.extname(file.originalname).toLowerCase();
@@ -45,7 +42,6 @@ export const uploadImage = multer({
   fileFilter: makeFileFilter(imageTypes, imageExtensions),
 });
 
-// Images or PDF
 export const uploadDocument = multer({
   storage: makeStorage(PRIVATE_FOLDER),
   limits,
@@ -62,7 +58,6 @@ const removeFile = async (filePath) => {
   }
 };
 
-// With ownerId, the file is deleted only if that user uploaded it
 export const deleteFile = async (fileUrl, ownerId) => {
   if (!fileUrl || !fileUrl.startsWith("/uploads/")) return;
 

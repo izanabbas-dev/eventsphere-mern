@@ -7,7 +7,6 @@ const highlights = [
   { icon: MessageSquare, text: "Chat in real time with organizers" },
 ];
 
-// Split screen: indigo panel on the left (desktop only), form on the right
 export default function AuthLayout({ title, subtitle, children }) {
   return (
     <div className="flex min-h-screen bg-white">

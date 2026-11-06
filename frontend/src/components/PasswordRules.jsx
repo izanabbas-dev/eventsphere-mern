@@ -1,7 +1,6 @@
 import { Check, X } from "lucide-react";
 import { getPasswordRules } from "../utils/helpers";
 
-// Live checklist under the password fields
 export default function PasswordRules({ password, confirmPassword }) {
   const rules = [
     ...getPasswordRules(password),

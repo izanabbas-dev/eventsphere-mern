@@ -24,10 +24,8 @@ router.post("/profile/logo", protect, authorize("exhibitor"), uploadImage.single
 router.post("/profile/documents", protect, authorize("exhibitor"), uploadDocument.array("documents", 5), uploadDocuments);
 router.delete("/profile/documents/:docId", protect, authorize("exhibitor"), deleteDocumentRules, validate, deleteDocument);
 
-// Exhibitor list of an expo is in expoRoutes.js (/api/expos/:expoId/exhibitors)
 router.get("/:id", optionalAuth, exhibitorProfileRules, validate, getExhibitorProfile);
 
-// Owner check is done in the controller
 router.get("/:id/documents/:docId", protect, authorize("admin", "exhibitor"), downloadDocumentRules, validate, downloadDocument);
 
 export default router;

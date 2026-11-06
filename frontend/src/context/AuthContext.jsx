@@ -5,7 +5,6 @@ import { AuthContext } from "./useAuth";
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
-  // Only wait for /auth/me if there is a saved token
   const [loading, setLoading] = useState(Boolean(localStorage.getItem("token")));
 
   useEffect(() => {
@@ -39,7 +38,6 @@ export function AuthProvider({ children }) {
     return res.data.user;
   }
 
-  // After a profile change: merge the new fields into the user
   function updateUser(fields) {
     setUser((oldUser) => ({ ...oldUser, ...fields }));
   }

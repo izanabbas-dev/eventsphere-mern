@@ -29,10 +29,8 @@ const boothSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// A booth number can only be used once inside the same expo
 boothSchema.index({ expo: 1, boothNumber: 1 }, { unique: true });
 
-// Two booths cannot use the same spot on the floor plan
 boothSchema.index({ expo: 1, "position.row": 1, "position.col": 1 }, { unique: true });
 
 const Booth = mongoose.model("Booth", boothSchema);

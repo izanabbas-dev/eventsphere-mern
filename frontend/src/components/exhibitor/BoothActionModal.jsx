@@ -16,7 +16,6 @@ function Detail({ label, children }) {
   );
 }
 
-// Booth info for an exhibitor, with reserve / cancel / select-as-preferred actions
 export default function BoothActionModal({
   booth,
   isMine,

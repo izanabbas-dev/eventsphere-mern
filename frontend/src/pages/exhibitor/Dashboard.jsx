@@ -34,7 +34,6 @@ async function fetchDashboard(userId) {
 
 export default function ExhibitorDashboard() {
   const { user } = useAuth();
-  // Same live count as the bell in the top bar
   const { unreadCount } = useNotifications();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +52,6 @@ export default function ExhibitorDashboard() {
   const { profile, applications, openExpos, booths } = data;
   const countBy = (status) => applications.filter((app) => app.status === status).length;
 
-  // { expoId: "pending" }
   const myStatus = {};
   applications.forEach((app) => {
     if (app.expo) myStatus[app.expo._id] = app.status;

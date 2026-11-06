@@ -1,4 +1,3 @@
-// tabs: [{ value: "overview", label: "Overview" }]
 export default function Tabs({ tabs, active, onChange }) {
   return (
     <div className="no-scrollbar overflow-x-auto overflow-y-hidden">

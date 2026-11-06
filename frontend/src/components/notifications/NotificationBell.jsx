@@ -7,7 +7,6 @@ import useAuth from "../../context/useAuth";
 import useNotifications from "../../context/useNotifications";
 import { getErrorMessage, getNotificationPath } from "../../utils/helpers";
 
-// Bell with the unread count. Opens a list of the latest 8 notifications.
 export default function NotificationBell() {
   const { user } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
@@ -15,7 +14,6 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const boxRef = useRef(null);
 
-  // Close when clicking outside or pressing Escape
   useEffect(() => {
     if (!open) return;
     function handleClick(e) {

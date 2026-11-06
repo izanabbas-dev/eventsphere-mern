@@ -1,6 +1,5 @@
 import { body } from "express-validator";
 
-// Same password rules for register, reset and change password
 const strongPassword = (field) =>
   body(field)
     .isLength({ min: 8 })

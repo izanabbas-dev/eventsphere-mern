@@ -1,4 +1,3 @@
-// options: ["A", "B"] or [{ value: "a", label: "A" }]
 export default function Select({ label, name, error, options = [], placeholder, required, className = "", ...props }) {
   const id = props.id || name;
 

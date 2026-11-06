@@ -10,7 +10,6 @@ import { getErrorMessage, getFieldErrors } from "../../utils/helpers";
 
 const sizeOptions = BOOTH_SIZES.map((size) => ({ value: size, label: size[0].toUpperCase() + size.slice(1) }));
 
-// Add a booth on an empty cell, or edit an existing booth
 export default function BoothFormModal({ expoId, booth, cell, onClose, onSaved }) {
   const isEdit = Boolean(booth);
   const position = isEdit ? booth.position : cell;

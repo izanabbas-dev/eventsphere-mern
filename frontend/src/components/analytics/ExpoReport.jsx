@@ -25,7 +25,6 @@ import api from "../../api/axios";
 import { useSocketEvent } from "../../context/useSocket";
 import { formatDate, getErrorMessage } from "../../utils/helpers";
 
-// Same colors as the floor plan and badges
 const COLORS = {
   indigo: "#4f46e5",
   amber: "#f59e0b",
@@ -49,12 +48,10 @@ function capitalize(text) {
   return text[0].toUpperCase() + text.slice(1);
 }
 
-// Long names are cut so the chart fits on mobile
 function shortText(text, max = 14) {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
-// Full report of one expo. The parent page joins the expo room for live updates.
 export default function ExpoReport({ expoId }) {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +72,6 @@ export default function ExpoReport({ expoId }) {
     loadReport();
   }, [loadReport]);
 
-  // A booth, session or registration of this expo changed: load fresh numbers
   useSocketEvent("booth_updated", loadReport);
   useSocketEvent("schedule_updated", loadReport);
   useSocketEvent("registrations_updated", loadReport);

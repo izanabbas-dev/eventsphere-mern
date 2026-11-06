@@ -6,30 +6,23 @@ const colors = {
   red: "bg-red-50 text-red-700 ring-red-200",
 };
 
-// Status words get their color automatically
 const statusColors = {
   approved: "green",
-  confirmed: "green",
   pending: "amber",
   rejected: "red",
   cancelled: "red",
-  // Expo status
   published: "indigo",
   ongoing: "green",
-  // Booth status
   available: "green",
   reserved: "amber",
   booked: "indigo",
-  // Registration status
   registered: "green",
   attended: "indigo",
-  // Feedback status
   open: "amber",
   in_progress: "indigo",
   resolved: "green",
 };
 
-// <Badge status="pending" />  or  <Badge color="indigo">Admin</Badge>
 export default function Badge({ status, color, children }) {
   const finalColor = color || statusColors[status] || "gray";
 

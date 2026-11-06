@@ -64,7 +64,6 @@ export default function ExpoDetail() {
     loadExpo();
   }, [loadExpo]);
 
-  // Live updates for this expo
   useExpoRoom(id);
 
   const handleExpoUpdated = useCallback(
@@ -86,7 +85,7 @@ export default function ExpoDetail() {
     if (!file) return;
 
     if (file.size > MAX_BANNER_SIZE) {
-      toast.error("File is too large. Max size is 5 MB");
+      toast.error("Banner must be 5 MB or smaller");
       return;
     }
 
@@ -141,7 +140,6 @@ export default function ExpoDetail() {
       </Link>
 
       <Card className="overflow-hidden p-0!">
-        {/* Banner */}
         <div className="relative aspect-[14/3] bg-linear-to-br from-indigo-500 to-indigo-800">
           {expo.banner && <img src={fileUrl(expo.banner)} alt={`${expo.title} banner`} className="h-full w-full object-cover" />}
           <label
@@ -159,7 +157,6 @@ export default function ExpoDetail() {
           </label>
         </div>
 
-        {/* Info */}
         <div className="p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
@@ -203,7 +200,6 @@ export default function ExpoDetail() {
         <div className="pt-6" role="tabpanel">
           {activeTab === "overview" && <Overview expo={expo} />}
           {activeTab === "floorplan" && (
-            // New key when the size changes, so the grid loads again
             <FloorPlan key={`${expo.floorPlan.rows}x${expo.floorPlan.cols}`} expoId={expo._id} />
           )}
           {activeTab === "sessions" && <SessionSchedule expo={expo} />}

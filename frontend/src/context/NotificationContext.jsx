@@ -6,8 +6,6 @@ import useAuth from "./useAuth";
 import { useSocketEvent } from "./useSocket";
 import { NotificationContext } from "./useNotifications";
 
-// My notifications and unread count, shared by the top bar bell and the Notifications page.
-// It lives in DashboardLayout, so it starts empty again after a logout.
 export function NotificationProvider({ children }) {
   const { token } = useAuth();
   const { pathname } = useLocation();
@@ -15,7 +13,6 @@ export function NotificationProvider({ children }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Load again when the token changes (for example after a password change)
   useEffect(() => {
     api
       .get("/notifications/my")
@@ -27,16 +24,14 @@ export function NotificationProvider({ children }) {
       .finally(() => setLoading(false));
   }, [token]);
 
-  // Live: a new notification goes to the top
   const handleNew = useCallback(
     (notification) => {
       setNotifications((list) => [notification, ...list]);
       setUnreadCount((count) => count + 1);
 
-      // The chat page already shows new messages, so no toast there
       const onChatPage = pathname.endsWith("/messages");
       if (!(notification.type === "message" && onChatPage)) {
-        toast(notification.title, { icon: "🔔" });
+        toast(notification.title);
       }
     },
     [pathname]

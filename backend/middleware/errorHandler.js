@@ -6,19 +6,16 @@ export const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || err.status || 500;
   let message = err.message || "Server error";
 
-  // Wrong MongoDB id format, e.g. /api/expos/123
   if (err.name === "CastError") {
     statusCode = 400;
     message = `Invalid ${err.path}: ${err.value}`;
   }
 
-  // Unique field already exists, e.g. same email
   if (err.code === 11000) {
     statusCode = 400;
     message = `${Object.keys(err.keyValue).join(", ")} already exists`;
   }
 
-  // Upload errors from multer, e.g. file too large
   if (err.name === "MulterError") {
     statusCode = 400;
     message = err.code === "LIMIT_FILE_SIZE" ? "File is too large. Max size is 5 MB" : err.message;
@@ -29,7 +26,6 @@ export const errorHandler = (err, req, res, next) => {
     message = Object.values(err.errors).map((e) => e.message).join(", ");
   }
 
-  // Server errors: log the real error here, but don't show its details to the client
   if (statusCode >= 500) {
     console.error(err);
     message = "Server error";

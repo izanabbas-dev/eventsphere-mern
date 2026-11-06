@@ -6,7 +6,6 @@ import Expo from "../models/Expo.js";
 
 let io = null;
 
-// Same rules as the protect middleware, but the token comes from socket.handshake.auth.token
 const socketAuth = async (socket, next) => {
   try {
     const token = socket.handshake.auth.token;
@@ -27,13 +26,11 @@ const socketAuth = async (socket, next) => {
 };
 
 export const initSocket = (httpServer) => {
-  // Same rule as cors in app.js: only our frontend can connect
   io = new Server(httpServer, { cors: { origin: process.env.CLIENT_URL || "http://localhost:5173" } });
 
   io.use(socketAuth);
 
   io.on("connection", (socket) => {
-    // Every user has a private room named with their user id
     socket.join(socket.user._id.toString());
 
     socket.on("join_expo", async (expoId) => {
@@ -71,7 +68,6 @@ export const emitToExpo = (expoId, event, data) => {
   if (io) io.to(`expo_${expoId}`).emit(event, data);
 };
 
-// Only public fields are sent, because staff phone numbers are private
 export const emitBoothUpdated = (booth, action = "updated") => {
   emitToExpo(booth.expo, "booth_updated", {
     action,
@@ -86,7 +82,6 @@ export const emitBoothUpdated = (booth, action = "updated") => {
   });
 };
 
-// Closes the live connections of a user, e.g. when an admin disables the account
 export const disconnectUser = (userId) => {
   if (io) io.in(userId.toString()).disconnectSockets(true);
 };

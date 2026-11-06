@@ -3,14 +3,13 @@ import Card from "./Card";
 import Button from "./Button";
 import EmptyState from "./EmptyState";
 
-// Shown when a page could not load its data, with a "Try again" button
-export default function LoadError({ onRetry, message = "Please check your connection and try again." }) {
+export default function LoadError({ onRetry }) {
   return (
     <Card>
       <EmptyState
         icon={CloudOff}
         title="Could not load the data"
-        message={message}
+        message="Please check your connection and try again."
         action={
           onRetry && (
             <Button variant="secondary" onClick={onRetry}>

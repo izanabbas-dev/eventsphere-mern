@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
 });
 
-// Add the JWT token to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -16,7 +15,6 @@ api.interceptors.request.use((config) => {
 // These routes send 401 for a wrong password, which is not an expired login
 const passwordRoutes = ["/auth/login", "/auth/update-password"];
 
-// On 401 (token expired or invalid): log out and go to the login page
 api.interceptors.response.use(
   (response) => response,
   (error) => {

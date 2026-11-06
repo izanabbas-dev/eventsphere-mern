@@ -5,7 +5,6 @@ import api from "../../api/axios";
 import { EXPO_NEXT_STATUSES } from "../../utils/constants";
 import { getErrorMessage } from "../../utils/helpers";
 
-// Dropdown with only the status changes the backend allows
 export default function ExpoStatusSelect({ expo, onChanged }) {
   const [saving, setSaving] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -29,7 +28,6 @@ export default function ExpoStatusSelect({ expo, onChanged }) {
   function handleChange(e) {
     const status = e.target.value;
     if (!status) return;
-    // Cancelling cannot be undone, so ask first
     if (status === "cancelled") setConfirmCancel(true);
     else changeStatus(status);
   }

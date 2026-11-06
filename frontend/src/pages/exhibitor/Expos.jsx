@@ -22,7 +22,6 @@ export default function ExhibitorExpos() {
     Promise.all([api.get("/expos", { params: { status: "published" } }), api.get("/applications/my")])
       .then(([exposRes, appsRes]) => {
         setExpos(exposRes.data.expos);
-        // { expoId: "pending" }
         const statuses = {};
         appsRes.data.applications.forEach((app) => {
           if (app.expo) statuses[app.expo._id] = app.status;
@@ -122,7 +121,7 @@ function ExpoCard({ expo, status }) {
         </div>
 
         <span className="mt-4 pt-1 text-sm font-semibold text-indigo-600">
-          {applied ? "View details" : "View & apply"} →
+          {applied ? "View details" : "View & apply"}
         </span>
       </div>
     </Link>

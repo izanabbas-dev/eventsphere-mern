@@ -28,7 +28,6 @@ export default function AdminUsers() {
   const [changingUser, setChangingUser] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  // The backend filters by role, the search is done here
   useEffect(() => {
     api
       .get("/admin/users", { params: role ? { role } : {} })
@@ -103,7 +102,6 @@ export default function AdminUsers() {
         </Card>
       ) : (
         <>
-          {/* Table on tablet and desktop */}
           <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm md:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold tracking-wide text-slate-500 uppercase">
@@ -137,7 +135,6 @@ export default function AdminUsers() {
             </table>
           </div>
 
-          {/* Cards on mobile */}
           <div className="space-y-4 md:hidden">
             {shownUsers.map((u) => (
               <Card key={u._id} className="p-5!">
@@ -201,7 +198,6 @@ function StatusBadge({ active }) {
 }
 
 function ToggleButton({ user, isMe, onClick }) {
-  // The admin cannot disable their own account
   if (isMe) return <span className="text-xs text-slate-400">-</span>;
 
   return user.isActive ? (

@@ -1,6 +1,5 @@
 import { timeAgo } from "../../utils/helpers";
 
-// One notification row: title, message, time ago and an unread dot
 export default function NotificationItem({ notification, onClick }) {
   const unread = !notification.isRead;
 

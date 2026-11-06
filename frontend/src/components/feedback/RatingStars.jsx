@@ -1,6 +1,5 @@
 import { Star } from "lucide-react";
 
-// Shows 1-5 filled stars, or "No rating"
 export default function RatingStars({ rating }) {
   if (!rating) return <span className="text-xs text-slate-400">No rating</span>;
 

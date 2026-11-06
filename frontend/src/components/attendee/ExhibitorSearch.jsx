@@ -12,7 +12,6 @@ import api from "../../api/axios";
 import { EXHIBITOR_CATEGORIES } from "../../utils/constants";
 import { getErrorMessage } from "../../utils/helpers";
 
-// Search the exhibitors of one expo by keyword and category
 export default function ExhibitorSearch({ expoId }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -22,7 +21,6 @@ export default function ExhibitorSearch({ expoId }) {
   useEffect(() => {
     let active = true;
 
-    // Wait a little after typing before searching
     const timer = setTimeout(() => {
       const params = { search: search.trim() || undefined, category: category || undefined };
       api
@@ -131,7 +129,7 @@ function ExhibitorCard({ exhibitor, expoId }) {
         ) : (
           <span className="text-xs text-slate-400">No booth yet</span>
         )}
-        <span className="text-sm font-semibold text-indigo-600">View →</span>
+        <span className="text-sm font-semibold text-indigo-600">View</span>
       </div>
     </Link>
   );

@@ -15,7 +15,6 @@ import {
 
 const router = express.Router();
 
-// Any logged-in user. Role rules are checked in the controller.
 router.post("/", protect, startConversationRules, validate, startConversation);
 router.get("/my", protect, getMyConversations);
 router.get("/:id/messages", protect, conversationIdRules, validate, getMessages);

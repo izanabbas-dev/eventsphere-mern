@@ -52,11 +52,9 @@ export default function Profile() {
   );
 }
 
-// "Show my contact info to others" switch. It is saved right away.
 function PrivacyCard() {
   const { user, updateUser } = useAuth();
   const [saving, setSaving] = useState(false);
-  // Not saved yet = same default as the backend: exhibitors share, attendees do not
   const isOn = typeof user.showContactInfo === "boolean" ? user.showContactInfo : user.role !== "attendee";
 
   async function handleToggle() {
@@ -122,7 +120,6 @@ function AvatarCard() {
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef(null);
 
-  // Free the preview URL when it is not needed anymore
   useEffect(() => {
     return () => {
       if (preview) URL.revokeObjectURL(preview);
@@ -139,7 +136,7 @@ function AvatarCard() {
       return;
     }
     if (chosen.size > MAX_IMAGE_SIZE) {
-      toast.error("Image must be smaller than 5 MB");
+      toast.error("Photo must be 5 MB or smaller");
       return;
     }
     setFile(chosen);
@@ -287,7 +284,6 @@ function PasswordCard() {
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
-      // The old login token stops working after a password change, so save the new one
       saveSession(res.data.token, res.data.user);
       setForm(emptyPasswords);
       toast.success("Password changed");

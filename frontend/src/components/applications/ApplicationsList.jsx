@@ -13,7 +13,6 @@ import { formatDate, getErrorMessage } from "../../utils/helpers";
 
 const filters = ["", ...APPLICATION_STATUSES];
 
-// All exhibitor applications of one expo, with a status filter
 export default function ApplicationsList({ expoId }) {
   const [applications, setApplications] = useState([]);
   const [status, setStatus] = useState("");

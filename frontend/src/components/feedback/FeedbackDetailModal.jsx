@@ -15,7 +15,6 @@ const statusOptions = FEEDBACK_STATUSES.map((s) => ({
   label: s === "in_progress" ? "In progress" : s[0].toUpperCase() + s.slice(1),
 }));
 
-// Full feedback message, with a form to change its status and reply
 export default function FeedbackDetailModal({ feedback, onClose, onSaved }) {
   const [status, setStatus] = useState(feedback.status);
   const [response, setResponse] = useState(feedback.adminResponse || "");

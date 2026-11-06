@@ -9,7 +9,6 @@ import CompanyLogo from "../applications/CompanyLogo";
 import api from "../../api/axios";
 import { getErrorMessage } from "../../utils/helpers";
 
-// For exhibitors: pick an expo, then message its organizer or another exhibitor of that expo
 export default function NewChatModal({ open, onClose, myId, onStart }) {
   const [expos, setExpos] = useState([]);
   const [expoId, setExpoId] = useState("");

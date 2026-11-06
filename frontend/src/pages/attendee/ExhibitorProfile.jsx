@@ -31,10 +31,8 @@ export default function AttendeeExhibitorProfile() {
       .finally(() => setLoading(false));
   }, [id, expoId]);
 
-  // Live updates for the small floor plan
   useExpoRoom(data?.booth ? expoId : null);
 
-  // Open my old chat with this exhibitor for this expo, or create it
   async function handleMessage() {
     setStarting(true);
     try {
@@ -46,7 +44,6 @@ export default function AttendeeExhibitorProfile() {
     }
   }
 
-  // Go back, or to the exhibitor list when this page was opened directly
   function goBack() {
     if (window.history.state?.idx > 0) navigate(-1);
     else navigate(expoId ? `/attendee/expos/${expoId}?tab=exhibitors` : "/attendee/exhibitors");
@@ -105,7 +102,6 @@ export default function AttendeeExhibitorProfile() {
               )}
             </div>
           </div>
-          {/* A chat always belongs to an expo, so the button needs one */}
           {expoId && (
             <Button onClick={handleMessage} loading={starting}>
               <MessageSquare className="h-4 w-4" aria-hidden="true" /> Message

@@ -26,7 +26,6 @@ import api from "../../api/axios";
 import useAuth from "../../context/useAuth";
 import { formatDate, getErrorMessage } from "../../utils/helpers";
 
-// Expos that are published or running and have not ended yet
 function getUpcomingExpos(expos) {
   const today = new Date().toISOString().slice(0, 10);
   return expos.filter(
@@ -34,7 +33,6 @@ function getUpcomingExpos(expos) {
   );
 }
 
-// Overview numbers, upcoming expos and their pending applications (newest first)
 async function fetchDashboard() {
   const [overviewRes, exposRes] = await Promise.all([api.get("/analytics/overview"), api.get("/expos")]);
   const upcoming = getUpcomingExpos(exposRes.data.expos);
@@ -67,7 +65,6 @@ export default function AdminDashboard() {
 
   if (loading) return <Spinner fullPage />;
 
-  // The overview is missing only when loading failed
   if (!data.overview) return <LoadError onRetry={() => window.location.reload()} />;
 
   const { overview, upcoming, pending } = data;
@@ -120,7 +117,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Quick actions */}
       <Card className="mb-6 p-4!">
         <h2 className="mb-3 text-sm font-semibold text-slate-900">Quick actions</h2>
         <div className="flex flex-wrap gap-3">

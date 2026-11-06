@@ -8,20 +8,17 @@ import { formatChatTime, formatTime, toLocalDateKey } from "../../utils/helpers"
 
 const MAX_LENGTH = 2000;
 
-// "2:30 PM" for today, "12 Mar, 2:30 PM" for older messages
 function messageTime(date) {
   const isToday = toLocalDateKey(date) === toLocalDateKey(new Date());
   return isToday ? formatTime(date) : `${formatChatTime(date)}, ${formatTime(date)}`;
 }
 
-// The open chat. The parent page gives a new "key" for each conversation, so the input starts empty.
 export default function ChatWindow({ conversation, messages, loading, myId, onBack, onSend }) {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const listRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Keep the newest message in view
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages, loading]);
@@ -40,7 +37,6 @@ export default function ChatWindow({ conversation, messages, loading, myId, onBa
     }
   }
 
-  // Enter sends, Shift + Enter makes a new line
   function handleKeyDown(e) {
     if (e.key === "Enter" && !e.shiftKey) handleSubmit(e);
   }
@@ -64,7 +60,6 @@ export default function ChatWindow({ conversation, messages, loading, myId, onBa
 
   return (
     <>
-      {/* Header */}
       <div className="flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-3 py-3 sm:px-4">
         <button
           type="button"
@@ -84,7 +79,6 @@ export default function ChatWindow({ conversation, messages, loading, myId, onBa
             {other.companyName && `${other.companyName} · `}
             {conversation.expo?.title}
           </p>
-          {/* Sent by the backend only when this user shares contact info */}
           {(other.email || other.phone) && (
             <p className="mt-0.5 flex flex-wrap gap-x-3 text-xs">
               {other.email && (
@@ -104,7 +98,6 @@ export default function ChatWindow({ conversation, messages, loading, myId, onBa
         </div>
       </div>
 
-      {/* Messages */}
       <div ref={listRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50 px-3 py-4 sm:px-5">
         {loading ? (
           <div className="flex justify-center py-16 text-indigo-600">
@@ -131,7 +124,6 @@ export default function ChatWindow({ conversation, messages, loading, myId, onBa
         )}
       </div>
 
-      {/* Input */}
       <form onSubmit={handleSubmit} className="flex shrink-0 items-end gap-2 border-t border-slate-200 bg-white p-3">
         <label htmlFor="chat-input" className="sr-only">
           Type a message

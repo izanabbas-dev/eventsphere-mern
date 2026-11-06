@@ -1,4 +1,3 @@
-// Booth colors used by the admin and exhibitor floor plans
 export const boothColors = {
   available: "border-green-300 bg-green-100 text-green-900 hover:bg-green-200",
   reserved: "border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200",

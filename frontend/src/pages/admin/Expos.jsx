@@ -44,7 +44,6 @@ export default function AdminExpos() {
     }
   }, [search, status]);
 
-  // Wait a little after typing before searching
   useEffect(() => {
     const timer = setTimeout(loadExpos, 300);
     return () => clearTimeout(timer);
@@ -136,7 +135,6 @@ export default function AdminExpos() {
         </Card>
       ) : (
         <>
-          {/* Table on tablet and desktop */}
           <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm md:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold tracking-wide text-slate-500 uppercase">
@@ -176,7 +174,6 @@ export default function AdminExpos() {
             </table>
           </div>
 
-          {/* Cards on mobile */}
           <div className="space-y-4 md:hidden">
             {expos.map((expo) => (
               <Card key={expo._id} className="p-5!">

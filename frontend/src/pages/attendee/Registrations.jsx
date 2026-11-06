@@ -17,7 +17,6 @@ import { formatSessionTime, getErrorMessage } from "../../utils/helpers";
 export default function AttendeeRegistrations() {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
-  // The registration to cancel
   const [cancelTarget, setCancelTarget] = useState(null);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -60,7 +59,6 @@ export default function AttendeeRegistrations() {
 
   if (loading) return <Spinner fullPage />;
 
-  // Active tickets first, then by expo start date
   const expoRegistrations = registrations
     .filter((r) => !r.session)
     .sort((a, b) => {
@@ -70,7 +68,6 @@ export default function AttendeeRegistrations() {
       return new Date(a.expo.startDate) - new Date(b.expo.startDate);
     });
 
-  // Active session registrations of one expo, sorted by time
   function sessionsOf(expoId) {
     return registrations
       .filter((r) => r.session && r.expo._id === expoId && r.status !== "cancelled")

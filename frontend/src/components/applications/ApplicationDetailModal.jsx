@@ -12,11 +12,9 @@ import api from "../../api/axios";
 import { CURRENCY } from "../../utils/constants";
 import { downloadFile, formatDate, getErrorMessage } from "../../utils/helpers";
 
-// Full details of one application. Admin can approve or reject it while it is pending.
 export default function ApplicationDetailModal({ applicationId, onClose, onChanged }) {
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
-  // null, "approve" or "reject"
   const [mode, setMode] = useState(null);
   const [booths, setBooths] = useState([]);
   const [boothsLoading, setBoothsLoading] = useState(false);
@@ -38,7 +36,6 @@ export default function ApplicationDetailModal({ applicationId, onClose, onChang
       .finally(() => setLoading(false));
   }, [applicationId, onClose]);
 
-  // On small screens the approve/reject box is at the bottom, so scroll to it
   useEffect(() => {
     if (mode) actionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [mode, boothsLoading]);
@@ -48,14 +45,12 @@ export default function ApplicationDetailModal({ applicationId, onClose, onChang
     setBoothsLoading(true);
     try {
       const res = await api.get(`/expos/${application.expo._id}/booths`);
-      // Free booths, and booths this exhibitor already holds
       const exhibitorId = application.exhibitor._id;
       const usable = res.data.booths.filter(
         (booth) => booth.status === "available" || booth.exhibitor?._id === exhibitorId
       );
       setBooths(usable);
 
-      // Pick the booth the exhibitor holds, or else their first free preferred booth
       const preferredIds = application.preferredBooths.map((booth) => booth._id);
       const held = usable.find((booth) => booth.exhibitor?._id === exhibitorId);
       const preferred = usable.find((booth) => preferredIds.includes(booth._id));
@@ -115,7 +110,6 @@ export default function ApplicationDetailModal({ applicationId, onClose, onChang
 
   const isPending = application?.status === "pending";
 
-  // Footer buttons change with the step
   let footer = (
     <Button variant="secondary" onClick={onClose}>
       Close
@@ -216,7 +210,6 @@ function Details({ application, downloadingId, onDownload, actionBox }) {
 
   return (
     <div className="space-y-6">
-      {/* Company header */}
       <div className="flex gap-4">
         <CompanyLogo logo={profile.logo} name={companyName} size="lg" />
         <div className="min-w-0 flex-1">
@@ -232,7 +225,6 @@ function Details({ application, downloadingId, onDownload, actionBox }) {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-        {/* Left: company info */}
         <div className="space-y-6">
           <Section title="About the company">
             <p className="text-sm whitespace-pre-line text-slate-600">{profile.description || "No description added."}</p>
@@ -300,7 +292,6 @@ function Details({ application, downloadingId, onDownload, actionBox }) {
           </Section>
         </div>
 
-        {/* Right: application info */}
         <div className="space-y-6">
           <Section title="Message">
             <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm whitespace-pre-line text-slate-700">
@@ -361,7 +352,7 @@ function ApproveBox({ application, booths, loading, boothId, onBoothChange, admi
     const parts = [booth.boothNumber, booth.hall, booth.size, `${CURRENCY} ${booth.price}`].filter(Boolean);
     let label = parts.join(" · ");
     if (booth.status !== "available") label += ` (${booth.status} by this exhibitor)`;
-    if (preferredIds.includes(booth._id)) label += " ★ preferred";
+    if (preferredIds.includes(booth._id)) label += " preferred";
     return { value: booth._id, label };
   });
 

@@ -7,7 +7,6 @@ import { createNotification } from "../utils/notify.js";
 import { emitToUser } from "../utils/socket.js";
 import { canSeeContact } from "../utils/helpers.js";
 
-// Sorted roles: "admin" < "attendee" < "exhibitor". Returns null when the chat is not allowed.
 const getConversationType = (roleA, roleB) => {
   const roles = [roleA, roleB].sort().join("_");
   if (roles === "admin_exhibitor") return "support";
@@ -16,12 +15,10 @@ const getConversationType = (roleA, roleB) => {
   return null;
 };
 
-// Only a participant can open a conversation
 const findMyConversation = (conversationId, userId) => {
   return Conversation.findOne({ _id: conversationId, participants: userId });
 };
 
-// POST /api/conversations
 export const startConversation = async (req, res) => {
   const { userId, expoId } = req.body;
 
@@ -48,7 +45,6 @@ export const startConversation = async (req, res) => {
     return res.status(403).json({ success: false, message: "You cannot start a chat with this user" });
   }
 
-  // Return the old conversation if these two users already chat about this expo
   let conversation = await Conversation.findOne({
     expo: expo._id,
     participants: { $all: [req.user._id, otherUser._id], $size: 2 },
@@ -69,7 +65,6 @@ export const startConversation = async (req, res) => {
   res.status(statusCode).json({ success: true, conversation });
 };
 
-// GET /api/conversations/my
 export const getMyConversations = async (req, res) => {
   const conversations = await Conversation.find({ participants: req.user._id })
     .sort({ updatedAt: -1 })
@@ -78,14 +73,12 @@ export const getMyConversations = async (req, res) => {
     .populate("expo", "title")
     .lean();
 
-  // Company names are saved in ExhibitorProfile, not in User
   const userIds = conversations.flatMap((c) => c.participants.filter(Boolean).map((p) => p._id));
   const profiles = await ExhibitorProfile.find({ user: { $in: userIds } }).select("user companyName");
 
   const result = conversations.map((conversation) => {
     const other = conversation.participants.find((p) => p && !p._id.equals(req.user._id));
     const profile = other && profiles.find((p) => p.user.equals(other._id));
-    // Privacy: email and phone only when the other user allows it (admins always see them)
     const showContact = other && canSeeContact(req, other);
 
     return {
@@ -111,7 +104,6 @@ export const getMyConversations = async (req, res) => {
   res.status(200).json({ success: true, count: result.length, conversations: result });
 };
 
-// GET /api/conversations/:id/messages
 export const getMessages = async (req, res) => {
   const conversation = await findMyConversation(req.params.id, req.user._id);
 
@@ -119,7 +111,6 @@ export const getMessages = async (req, res) => {
     return res.status(404).json({ success: false, message: "Conversation not found" });
   }
 
-  // Messages from the other person are now read by me
   await Message.updateMany(
     { conversation: conversation._id, sender: { $ne: req.user._id }, isRead: false },
     { isRead: true }
@@ -132,7 +123,6 @@ export const getMessages = async (req, res) => {
   res.status(200).json({ success: true, count: messages.length, messages });
 };
 
-// POST /api/conversations/:id/messages
 export const sendMessage = async (req, res) => {
   const conversation = await findMyConversation(req.params.id, req.user._id);
 
@@ -148,7 +138,6 @@ export const sendMessage = async (req, res) => {
     text: req.body.text,
   });
 
-  // Saving also updates updatedAt, so this chat moves to the top of the list
   conversation.lastMessage = message._id;
   await conversation.save();
 

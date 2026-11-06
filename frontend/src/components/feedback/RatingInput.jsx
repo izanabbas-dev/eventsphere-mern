@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
 
-// Click a star to choose 1-5. Click the same star again to clear it.
 export default function RatingInput({ value, onChange }) {
   const [hover, setHover] = useState(0);
   const shown = hover || value;

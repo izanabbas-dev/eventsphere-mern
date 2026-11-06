@@ -20,14 +20,11 @@ import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
-// cross-origin lets the frontend (on another port) show uploaded images
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
-// Only our frontend (CLIENT_URL in .env) can call the API from the browser
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(morgan("dev"));
 app.use(express.json());
 
-// Uploaded files, e.g. http://localhost:3000/uploads/123-abc.png
 app.use("/uploads", express.static("uploads"));
 
 app.get("/api/health", (req, res) => {
@@ -49,7 +46,6 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/admin", adminRoutes);
 
-// These two must stay at the end
 app.use(notFound);
 app.use(errorHandler);
 

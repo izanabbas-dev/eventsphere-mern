@@ -20,7 +20,6 @@ export default function AttendeeBookmarks() {
   const [failed, setFailed] = useState(false);
 
   const loadBookmarks = useCallback(() => {
-    // The backend already sorts them by session time
     fetchMyBookmarks()
       .then((list) => {
         setBookmarks(list);

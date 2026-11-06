@@ -24,12 +24,10 @@ async function fetchDashboard() {
   const now = new Date();
   const today = toInputDate(now);
 
-  // Expo tickets that are active and not over yet
   const upcomingExpos = registrations
     .filter((r) => !r.session && r.status === "registered" && toInputDate(r.expo.endDate) >= today)
     .sort((a, b) => new Date(a.expo.startDate) - new Date(b.expo.startDate));
 
-  // Next 3 bookmarked sessions (already sorted by time)
   const nextBookmarks = bookmarks
     .filter((b) => b.session.status !== "cancelled" && new Date(b.session.startTime) > now)
     .slice(0, 3);
@@ -44,7 +42,6 @@ async function fetchDashboard() {
 
 export default function AttendeeDashboard() {
   const { user } = useAuth();
-  // Same live count as the bell in the top bar
   const { unreadCount } = useNotifications();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);

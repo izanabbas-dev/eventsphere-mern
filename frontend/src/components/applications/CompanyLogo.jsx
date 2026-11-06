@@ -1,6 +1,5 @@
 import { fileUrl, getInitials } from "../../utils/helpers";
 
-// Company logo, or the company initials when there is no logo
 export default function CompanyLogo({ logo, name, size = "md" }) {
   const sizeClass = size === "lg" ? "h-16 w-16 text-lg" : "h-12 w-12 text-sm";
 

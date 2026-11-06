@@ -3,7 +3,6 @@ import useAuth from "../context/useAuth";
 import { getDashboardPath } from "../utils/helpers";
 import Spinner from "./ui/Spinner";
 
-// roles: which roles can open these pages. Leave empty to allow every logged in user.
 export default function ProtectedRoute({ roles }) {
   const { user, loading } = useAuth();
   const location = useLocation();

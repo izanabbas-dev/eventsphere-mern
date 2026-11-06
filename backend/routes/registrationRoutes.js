@@ -6,8 +6,6 @@ import { registrationIdRules } from "../validators/registrationValidator.js";
 
 const router = express.Router();
 
-// Expo and session registration routes are in expoRoutes.js and sessionRoutes.js
-
 router.get("/my", protect, authorize("attendee"), getMyRegistrations);
 router.delete("/:id", protect, authorize("attendee"), registrationIdRules, validate, cancelRegistration);
 

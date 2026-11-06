@@ -1,9 +1,8 @@
 import { body, param, query } from "express-validator";
+import { isSingleValue } from "../utils/helpers.js";
 
 const types = ["suggestion", "issue", "complaint", "other"];
 const statuses = ["open", "in_progress", "resolved"];
-
-const isSingleValue = (value) => typeof value === "string";
 
 export const createFeedbackRules = [
   body("type").isIn(types).withMessage(`Type must be one of: ${types.join(", ")}`),

@@ -14,14 +14,10 @@ import api from "../../api/axios";
 import { useExpoRoom } from "../../context/useSocket";
 import { getErrorMessage } from "../../utils/helpers";
 
-// Page with an expo selector at the top. The chosen expo is kept in the URL (?expo=123).
-// children is a function that gets the selected expo: {(expo) => <FloorPlan expoId={expo._id} />}
-// basePath is "/admin" or "/attendee" (used for the links). Expos with a status in hideStatuses are not shown.
 export default function ExpoPickerPage({ title, subtitle, emptyMessage, basePath = "/admin", hideStatuses = [], children }) {
   const [allExpos, setAllExpos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
-  // Changing this number loads the expos again ("Try again")
   const [reloadKey, setReloadKey] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -49,7 +45,6 @@ export default function ExpoPickerPage({ title, subtitle, emptyMessage, basePath
   const selectedId = searchParams.get("expo") || expos[0]?._id || "";
   const selectedExpo = expos.find((expo) => expo._id === selectedId);
 
-  // Live updates for the chosen expo
   useExpoRoom(selectedExpo ? selectedId : null);
 
   if (loading) return <Spinner fullPage />;

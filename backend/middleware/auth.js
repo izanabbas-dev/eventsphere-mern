@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// Checks the JWT in the "Authorization: Bearer <token>" header
 export const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -30,7 +29,6 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// For public routes: sets req.user if a valid token is sent, otherwise continues as a guest
 export const optionalAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -52,7 +50,6 @@ export const optionalAuth = async (req, res, next) => {
   next();
 };
 
-// Usage: authorize("admin") or authorize("admin", "exhibitor")
 export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

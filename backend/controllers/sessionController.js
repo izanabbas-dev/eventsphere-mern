@@ -8,7 +8,6 @@ import { isAdmin, escapeRegex } from "../utils/helpers.js";
 
 const formatTime = (date) => date.toLocaleString("en-GB", { timeZone: "Asia/Karachi" });
 
-// Session must be inside the expo days (start of first day to end of last day)
 const getTimeError = (expo, startTime, endTime) => {
   if (endTime <= startTime) {
     return "End time must be after the start time";
@@ -26,7 +25,6 @@ const getTimeError = (expo, startTime, endTime) => {
   return null;
 };
 
-// Two sessions overlap when one starts before the other ends
 const getOverlapError = async (expoId, location, startTime, endTime, sessionId) => {
   const filter = {
     expo: expoId,
@@ -48,7 +46,6 @@ const getOverlapError = async (expoId, location, startTime, endTime, sessionId) 
 const cleanSpeakers = (speakers) =>
   speakers.map((speaker) => ({ name: speaker.name, designation: speaker.designation, bio: speaker.bio }));
 
-// Sends one notification to every user who registered for or bookmarked the session
 const notifySessionUsers = async (session, title, message) => {
   const registrations = await Registration.find({ session: session._id, status: "registered" }).select("attendee");
   const bookmarks = await Bookmark.find({ session: session._id }).select("user");
@@ -71,7 +68,6 @@ const notifySessionUsers = async (session, title, message) => {
   }
 };
 
-// POST /api/expos/:expoId/sessions
 export const createSession = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -115,7 +111,6 @@ export const createSession = async (req, res) => {
   res.status(201).json({ success: true, message: "Session created", session });
 };
 
-// GET /api/expos/:expoId/sessions?date=2026-12-10&type=workshop&topic=AI&search=ali
 export const getSessions = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -130,7 +125,6 @@ export const getSessions = async (req, res) => {
   if (type) filter.type = type;
   if (topic) filter.topic = { $regex: `^${escapeRegex(topic)}$`, $options: "i" };
 
-  // All sessions that start on this day
   if (date) {
     const dayStart = new Date(`${date}T00:00:00.000Z`);
     const dayEnd = new Date(`${date}T23:59:59.999Z`);
@@ -147,7 +141,6 @@ export const getSessions = async (req, res) => {
   res.status(200).json({ success: true, count: sessions.length, sessions });
 };
 
-// GET /api/sessions/:id
 export const getSession = async (req, res) => {
   const session = await Session.findById(req.params.id).populate("expo", "title location startDate endDate status");
 
@@ -158,7 +151,6 @@ export const getSession = async (req, res) => {
   res.status(200).json({ success: true, session });
 };
 
-// PUT /api/sessions/:id
 export const updateSession = async (req, res) => {
   const session = await Session.findById(req.params.id);
 
@@ -208,7 +200,6 @@ export const updateSession = async (req, res) => {
 
   await session.save();
 
-  // New time means the bookmark reminders must be sent again
   if (timeChanged) {
     await Bookmark.updateMany({ session: session._id }, { reminderSent: false });
   }
@@ -226,7 +217,6 @@ export const updateSession = async (req, res) => {
   res.status(200).json({ success: true, message: "Session updated", session });
 };
 
-// PATCH /api/sessions/:id/cancel
 export const cancelSession = async (req, res) => {
   const session = await Session.findById(req.params.id);
 
@@ -248,7 +238,6 @@ export const cancelSession = async (req, res) => {
   res.status(200).json({ success: true, message: "Session cancelled", session });
 };
 
-// DELETE /api/sessions/:id
 export const deleteSession = async (req, res) => {
   const session = await Session.findById(req.params.id);
 

@@ -40,23 +40,18 @@ router.delete("/:id", protect, authorize("admin"), expoIdRules, validate, delete
 router.patch("/:id/status", protect, authorize("admin"), updateStatusRules, validate, updateExpoStatus);
 router.post("/:id/banner", protect, authorize("admin"), expoIdRules, validate, uploadImage.single("banner"), uploadExpoBanner);
 
-// Booths of an expo (floor plan)
 router.get("/:expoId/booths", optionalAuth, listBoothRules, validate, getBooths);
 router.post("/:expoId/booths", protect, authorize("admin"), createBoothRules, validate, createBooth);
 
-// Exhibitor applications of an expo
 router.post("/:expoId/applications", protect, authorize("exhibitor"), applyRules, validate, applyToExpo);
 router.get("/:expoId/applications", protect, authorize("admin"), listApplicationRules, validate, getExpoApplications);
 
-// Sessions of an expo (schedule)
 router.get("/:expoId/sessions", optionalAuth, listSessionRules, validate, getSessions);
 router.post("/:expoId/sessions", protect, authorize("admin"), createSessionRules, validate, createSession);
 
-// Attendee registration for an expo
 router.post("/:expoId/register", protect, authorize("attendee"), expoIdParamRules, validate, registerForExpo);
 router.get("/:expoId/registrations", protect, authorize("admin"), listRegistrationRules, validate, getExpoRegistrations);
 
-// Exhibitor search in an expo
 router.get("/:expoId/exhibitors", optionalAuth, listExhibitorRules, validate, getExpoExhibitors);
 
 export default router;

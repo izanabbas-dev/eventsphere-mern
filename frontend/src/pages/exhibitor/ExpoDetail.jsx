@@ -35,7 +35,6 @@ export default function ExhibitorExpoDetail() {
     return api.get(`/expos/${id}/booths`).then((res) => {
       setBooths(res.data.booths);
       setFloorPlan(res.data.floorPlan);
-      // A selected booth that was just taken cannot stay selected
       const availableIds = res.data.booths.filter((b) => b.status === "available").map((b) => b._id);
       setSelectedIds((prev) => prev.filter((boothId) => availableIds.includes(boothId)));
     });
@@ -53,14 +52,12 @@ export default function ExhibitorExpoDetail() {
       .finally(() => setLoading(false));
   }, [id, loadBooths, loadApplication]);
 
-  // Coming from an "Apply" button: scroll to the apply form
   useEffect(() => {
     if (!loading && hash === "#apply") {
       document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" });
     }
   }, [loading, hash]);
 
-  // Live updates: a booth changed (maybe the admin assigned it to me)
   useExpoRoom(id);
   const handleBoothUpdated = useCallback(() => {
     loadBooths().catch(() => {});
@@ -68,7 +65,6 @@ export default function ExhibitorExpoDetail() {
   }, [loadBooths, loadApplication]);
   useSocketEvent("booth_updated", handleBoothUpdated);
 
-  // Live updates: the organizer changed or removed this expo
   const handleExpoUpdated = useCallback(
     (data) => {
       if (data.action === "deleted") {
@@ -90,7 +86,6 @@ export default function ExhibitorExpoDetail() {
     loadApplication().catch((error) => toast.error(getErrorMessage(error)));
   }
 
-  // Open the support chat with the organizer of this expo
   async function contactOrganizer() {
     setContacting(true);
     try {
@@ -143,7 +138,6 @@ export default function ExhibitorExpoDetail() {
         <ArrowLeft className="h-4 w-4" aria-hidden="true" /> All expos
       </Link>
 
-      {/* Expo info */}
       <Card className="mb-6 overflow-hidden p-0!">
         {expo.banner && <img src={fileUrl(expo.banner)} alt="" className="aspect-[14/3] w-full object-cover" />}
         <div className="p-5 sm:p-6">

@@ -9,7 +9,6 @@ import Session from "../models/Session.js";
 import ExhibitorApplication from "../models/ExhibitorApplication.js";
 import Feedback from "../models/Feedback.js";
 
-// Turns [{ _id: "booked", count: 3 }] into { available: 0, reserved: 0, booked: 3 }
 const toCountObject = (groups, keys) => {
   const result = {};
   keys.forEach((key) => (result[key] = 0));
@@ -35,7 +34,6 @@ const getAttendeesPerDay = (attendeeMatch) => {
   ]);
 };
 
-// 5 booths with the most visits
 const getTopBooths = (expoId) => {
   return BoothVisit.aggregate([
     { $match: { expo: expoId } },
@@ -48,7 +46,6 @@ const getTopBooths = (expoId) => {
   ]);
 };
 
-// 5 most popular sessions (registrations + bookmarks)
 const getTopSessions = async (expoId) => {
   const registrationMatch = { expo: expoId, session: { $ne: null }, status: { $ne: "cancelled" } };
   const sessionRegistrations = await countBy(Registration, registrationMatch, "session");
@@ -73,7 +70,6 @@ const getTopSessions = async (expoId) => {
 };
 
 const getFeedbackStats = async (expoId) => {
-  // $avg skips feedback without a rating
   const stats = await Feedback.aggregate([
     { $match: { expo: expoId } },
     { $group: { _id: null, count: { $sum: 1 }, averageRating: { $avg: "$rating" } } },
@@ -85,7 +81,6 @@ const getFeedbackStats = async (expoId) => {
   return { count: stats[0].count, averageRating: average ? Math.round(average * 10) / 10 : null };
 };
 
-// GET /api/analytics/expos/:expoId
 export const getExpoReport = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -93,10 +88,8 @@ export const getExpoReport = async (req, res) => {
     return res.status(404).json({ success: false, message: "Expo not found" });
   }
 
-  // Aggregation does not convert string ids, so use an ObjectId
   const expoId = new mongoose.Types.ObjectId(req.params.expoId);
 
-  // Expo registrations only (session = null), cancelled ones are not counted
   const attendeeMatch = { expo: expoId, session: null, status: { $ne: "cancelled" } };
 
   const totalAttendees = await Registration.countDocuments(attendeeMatch);
@@ -122,7 +115,6 @@ export const getExpoReport = async (req, res) => {
   });
 };
 
-// GET /api/analytics/overview
 export const getOverview = async (req, res) => {
   const userGroups = await countBy(User, {}, "role");
   const expoGroups = await countBy(Expo, {}, "status");

@@ -1,14 +1,11 @@
 import { createContext, useContext, useEffect } from "react";
 
-// The provider for this context is in SocketContext.jsx
 export const SocketContext = createContext(null);
 
-// The socket, or null while not connected
 export default function useSocket() {
   return useContext(SocketContext);
 }
 
-// Join the live room of an expo while the page is open
 export function useExpoRoom(expoId) {
   const socket = useSocket();
 
@@ -27,7 +24,6 @@ export function useExpoRoom(expoId) {
   }, [socket, expoId]);
 }
 
-// Run "handler" every time the server sends "event". Wrap handler in useCallback.
 export function useSocketEvent(event, handler) {
   const socket = useSocket();
 

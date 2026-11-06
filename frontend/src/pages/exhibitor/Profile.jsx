@@ -243,7 +243,6 @@ function LogoCard({ profile, onUploaded }) {
   const [preview, setPreview] = useState("");
   const [uploading, setUploading] = useState(false);
 
-  // Free the old preview URL when it changes
   useEffect(() => {
     return () => {
       if (preview) URL.revokeObjectURL(preview);
@@ -360,7 +359,7 @@ function DocumentsCard({ documents, onChange }) {
     }
     const tooBig = files.find((f) => f.size > MAX_FILE_SIZE);
     if (tooBig) {
-      toast.error(`${tooBig.name} is bigger than 5 MB`);
+      toast.error(`${tooBig.name} is larger than 5 MB`);
       return;
     }
 

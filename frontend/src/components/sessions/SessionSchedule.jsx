@@ -21,15 +21,11 @@ import {
   groupSessionsByDay,
 } from "../../utils/helpers";
 
-// Admin schedule of one expo, grouped by day.
-// The parent page must join the expo room (useExpoRoom) to get live updates.
 export default function SessionSchedule({ expo }) {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(emptySessionFilters);
-  // null, "new" or the session being edited
   const [formSession, setFormSession] = useState(null);
-  // { action: "cancel" | "delete", session }
   const [confirm, setConfirm] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -45,7 +41,6 @@ export default function SessionSchedule({ expo }) {
     loadSessions();
   }, [loadSessions]);
 
-  // Someone changed the schedule or booked a seat: load it again
   useSocketEvent("schedule_updated", loadSessions);
   useSocketEvent("registrations_updated", loadSessions);
 
@@ -173,7 +168,6 @@ function SessionCard({ session, onEdit, onCancel, onDelete }) {
   return (
     <Card className={`p-4! sm:p-5! ${cancelled ? "bg-slate-50 opacity-60" : ""}`}>
       <div className="flex flex-col gap-4 sm:flex-row">
-        {/* Time */}
         <div className="flex shrink-0 items-center gap-2 text-sm font-semibold text-indigo-700 sm:w-36 sm:flex-col sm:items-start sm:gap-0">
           <span className="flex items-center gap-1.5">
             <Clock className="h-4 w-4" aria-hidden="true" />
@@ -185,7 +179,6 @@ function SessionCard({ session, onEdit, onCancel, onDelete }) {
           </span>
         </div>
 
-        {/* Details */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h4 className={`font-semibold text-slate-900 ${cancelled ? "line-through" : ""}`}>{session.title}</h4>
@@ -229,7 +222,6 @@ function SessionCard({ session, onEdit, onCancel, onDelete }) {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex shrink-0 items-start gap-1">
           {!cancelled && (
             <>

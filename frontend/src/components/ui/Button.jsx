@@ -14,7 +14,6 @@ const sizes = {
   lg: "px-6 py-3 text-base",
 };
 
-// Pass "to" to render a link that looks like a button
 export default function Button({
   children,
   variant = "primary",

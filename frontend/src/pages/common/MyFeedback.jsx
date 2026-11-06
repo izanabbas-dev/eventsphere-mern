@@ -19,7 +19,6 @@ import { formatDate, getErrorMessage, getFieldErrors } from "../../utils/helpers
 const typeOptions = FEEDBACK_TYPES.map((t) => ({ value: t, label: t[0].toUpperCase() + t.slice(1) }));
 const emptyForm = { type: "suggestion", subject: "", message: "", rating: 0, expoId: "" };
 
-// For attendees and exhibitors: send feedback and see the admin's reply
 export default function MyFeedback() {
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
@@ -62,7 +61,7 @@ export default function MyFeedback() {
       const expo = expos.find((x) => x._id === form.expoId);
       setFeedback([{ ...res.data.feedback, expo: expo ? { _id: expo._id, title: expo.title } : null }, ...feedback]);
       setForm(emptyForm);
-      toast.success("Thank you! Your feedback has been sent.");
+      toast.success("Thanks! Your feedback was sent.");
     } catch (error) {
       setErrors(getFieldErrors(error));
       toast.error(getErrorMessage(error));

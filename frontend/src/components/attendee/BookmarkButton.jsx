@@ -2,8 +2,6 @@ import { useState } from "react";
 import { Star } from "lucide-react";
 import { REMIND_OPTIONS } from "../../utils/constants";
 
-// Star toggle with a "remind me before" choice.
-// onSave(minutes) adds the bookmark or changes its reminder, onRemove() deletes it.
 export default function BookmarkButton({ bookmark, disabled, busy, onSave, onRemove }) {
   const [remind, setRemind] = useState(bookmark?.remindBeforeMinutes || 30);
   const saved = Boolean(bookmark);

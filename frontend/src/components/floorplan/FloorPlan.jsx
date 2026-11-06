@@ -9,8 +9,6 @@ import { useSocketEvent } from "../../context/useSocket";
 import { getErrorMessage } from "../../utils/helpers";
 import { boothColors, legend } from "./boothStyles";
 
-// Admin floor plan: a grid of rows x cols. Click an empty cell to add a booth, click a booth to manage it.
-// The parent page must join the expo room (useExpoRoom) to get live updates.
 export default function FloorPlan({ expoId }) {
   const [booths, setBooths] = useState([]);
   const [floorPlan, setFloorPlan] = useState({ rows: 0, cols: 0 });
@@ -34,7 +32,6 @@ export default function FloorPlan({ expoId }) {
     loadBooths();
   }, [loadBooths]);
 
-  // Someone changed a booth: load the fresh floor plan
   useSocketEvent("booth_updated", loadBooths);
 
   if (loading) {
@@ -45,13 +42,11 @@ export default function FloorPlan({ expoId }) {
     );
   }
 
-  // Find a booth by its cell
   const boothAt = {};
   booths.forEach((booth) => {
     boothAt[`${booth.position.row}-${booth.position.col}`] = booth;
   });
 
-  // If the floor plan was made smaller, still show booths outside it
   const rows = Math.max(floorPlan.rows, ...booths.map((b) => b.position.row + 1));
   const cols = Math.max(floorPlan.cols, ...booths.map((b) => b.position.col + 1));
 
@@ -97,7 +92,6 @@ export default function FloorPlan({ expoId }) {
           className="grid gap-2"
           style={{ gridTemplateColumns: `2rem repeat(${cols}, minmax(5.5rem, 1fr))`, minWidth: `${2 + cols * 6}rem` }}
         >
-          {/* Column numbers */}
           <span />
           {Array.from({ length: cols }, (_, col) => (
             <span key={col} className="text-center text-xs font-semibold text-slate-400">

@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer";
 
-// If SMTP is not set in .env, the email is only printed in the console
 const sendEmail = async ({ to, subject, text }) => {
   if (!process.env.SMTP_HOST) {
     console.log(`Email (SMTP not set)\nTo: ${to}\nSubject: ${subject}\n\n${text}`);

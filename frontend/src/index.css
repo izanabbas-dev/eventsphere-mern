@@ -20,7 +20,6 @@
   }
 }
 
-/* Thin, light scrollbar inside modals */
 .modal-scroll {
   scrollbar-width: thin;
   scrollbar-color: var(--color-slate-300) transparent;
@@ -37,13 +36,11 @@ body {
   @apply bg-slate-50 text-slate-800 antialiased;
 }
 
-/* Clear focus ring for keyboard users on every link and button */
 a:focus-visible,
 button:focus-visible {
   @apply outline-2 outline-offset-2 outline-indigo-600;
 }
 
-/* Scrolls sideways on small screens but shows no scrollbar (used by Tabs) */
 .no-scrollbar {
   scrollbar-width: none;
 }

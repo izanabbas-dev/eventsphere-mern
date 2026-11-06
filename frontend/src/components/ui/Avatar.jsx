@@ -7,7 +7,6 @@ const sizes = {
   xl: "h-24 w-24 text-2xl",
 };
 
-// Shows the photo, or the initials when there is no photo. "src" can be a full URL (preview).
 export default function Avatar({ src, name, size = "md", className = "" }) {
   const classes = `${sizes[size]} shrink-0 rounded-full ${className}`;
 

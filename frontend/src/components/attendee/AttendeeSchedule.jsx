@@ -23,8 +23,6 @@ import {
   groupSessionsByDay,
 } from "../../utils/helpers";
 
-// Expo schedule for attendees: register for sessions and bookmark them.
-// The parent page must join the expo room (useExpoRoom) to get live updates.
 export default function AttendeeSchedule({ expo, showFilters = false }) {
   const [sessions, setSessions] = useState([]);
   const [registrations, setRegistrations] = useState([]);
@@ -32,7 +30,6 @@ export default function AttendeeSchedule({ expo, showFilters = false }) {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(emptySessionFilters);
   const [busyId, setBusyId] = useState(null);
-  // { session, registration } to cancel
   const [cancelTarget, setCancelTarget] = useState(null);
 
   const loadSessions = useCallback(() => {
@@ -56,15 +53,12 @@ export default function AttendeeSchedule({ expo, showFilters = false }) {
     reload();
   }, [reload]);
 
-  // The admin changed the schedule: load it again
   useSocketEvent("schedule_updated", reload);
-  // Someone booked or freed a seat: load the fresh "seats left"
   const reloadSessions = useCallback(() => {
     loadSessions().catch(() => {});
   }, [loadSessions]);
   useSocketEvent("registrations_updated", reloadSessions);
 
-  // Run an API call for one session, then reload
   async function runAction(sessionId, request) {
     setBusyId(sessionId);
     try {
@@ -93,7 +87,6 @@ export default function AttendeeSchedule({ expo, showFilters = false }) {
 
   const expoRegistered = Boolean(findExpoRegistration(registrations, expo._id));
 
-  // { sessionId: registration } and { sessionId: bookmark }
   const mySessionRegs = {};
   registrations.forEach((r) => {
     if (r.session && r.status === "registered") mySessionRegs[r.session._id] = r;
@@ -194,7 +187,6 @@ function SessionCard({ session, canRegister, registration, bookmark, busy, onReg
   return (
     <Card className={`p-4! sm:p-5! ${cancelled ? "bg-slate-50 opacity-60" : ""}`}>
       <div className="flex flex-col gap-4 sm:flex-row">
-        {/* Time */}
         <div className="flex shrink-0 items-center gap-2 text-sm font-semibold text-indigo-700 sm:w-32 sm:flex-col sm:items-start sm:gap-0">
           <span className="flex items-center gap-1.5">
             <Clock className="h-4 w-4" aria-hidden="true" />
@@ -206,7 +198,6 @@ function SessionCard({ session, canRegister, registration, bookmark, busy, onReg
           </span>
         </div>
 
-        {/* Details */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h4 className={`font-semibold text-slate-900 ${cancelled ? "line-through" : ""}`}>{session.title}</h4>
@@ -247,7 +238,6 @@ function SessionCard({ session, canRegister, registration, bookmark, busy, onReg
           )}
         </div>
 
-        {/* Actions */}
         {!cancelled && (
           <div className="flex shrink-0 flex-wrap items-center gap-3 sm:flex-col sm:items-end">
             <BookmarkButton

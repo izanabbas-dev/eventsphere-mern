@@ -12,8 +12,6 @@ import { applicationIdRules, approveRules, rejectRules } from "../validators/app
 
 const router = express.Router();
 
-// Apply and list by expo are in expoRoutes.js (/api/expos/:expoId/applications)
-
 // "/my" must stay above "/:id"
 router.get("/my", protect, authorize("exhibitor"), getMyApplications);
 router.patch("/:id/withdraw", protect, authorize("exhibitor"), applicationIdRules, validate, withdrawApplication);

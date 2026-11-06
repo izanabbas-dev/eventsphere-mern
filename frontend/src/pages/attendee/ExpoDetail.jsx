@@ -32,7 +32,6 @@ export default function AttendeeExpoDetail() {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // The tab is kept in the URL so "Back" from an exhibitor profile opens the same tab
   const activeTab = searchParams.get("tab") || "overview";
 
   const loadRegistrations = useCallback(() => {
@@ -45,7 +44,6 @@ export default function AttendeeExpoDetail() {
       .finally(() => setLoading(false));
   }, [id, loadRegistrations]);
 
-  // Live updates for the expo details, schedule and floor plan tabs
   useExpoRoom(id);
   const navigate = useNavigate();
   const handleExpoUpdated = useCallback(

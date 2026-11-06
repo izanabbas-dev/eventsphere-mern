@@ -18,7 +18,6 @@ const exhibitorApplicationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// One application per exhibitor for each expo
 exhibitorApplicationSchema.index({ expo: 1, exhibitor: 1 }, { unique: true });
 
 const ExhibitorApplication = mongoose.model("ExhibitorApplication", exhibitorApplicationSchema);

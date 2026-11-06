@@ -1,14 +1,12 @@
 import api from "../api/axios";
 import { PASSWORD_MIN_LENGTH } from "./constants";
 
-// Each role has its own dashboard
 export function getDashboardPath(role) {
   if (role === "admin") return "/admin";
   if (role === "exhibitor") return "/exhibitor";
   return "/attendee";
 }
 
-// "Ali Khan" -> "AK"
 export function getInitials(name = "") {
   return name
     .trim()
@@ -19,13 +17,11 @@ export function getInitials(name = "") {
     .join("");
 }
 
-// Main error message from an axios error
 export function getErrorMessage(error) {
   if (!error.response) return "Cannot reach the server. Please check your connection.";
   return error.response.data?.message || "Something went wrong. Please try again.";
 }
 
-// Backend validation errors [{ field, message }] -> { email: "...", password: "..." }
 export function getFieldErrors(error) {
   const list = error.response?.data?.errors || [];
   const result = {};
@@ -39,7 +35,6 @@ export function isValidEmail(email) {
   return /^\S+@\S+\.\S+$/.test(email);
 }
 
-// Same password rules as the backend
 export function getPasswordRules(password) {
   return [
     { text: `At least ${PASSWORD_MIN_LENGTH} characters`, ok: password.length >= PASSWORD_MIN_LENGTH },
@@ -49,18 +44,15 @@ export function getPasswordRules(password) {
   ];
 }
 
-// Returns "" when the password is strong enough
 export function getPasswordError(password) {
   const failed = getPasswordRules(password).find((rule) => !rule.ok);
   return failed ? `Password needs: ${failed.text.toLowerCase()}` : "";
 }
 
-// Uploaded files are saved as "/uploads/abc.png" on the backend server
 const SERVER_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/api\/?$/, "");
 
 export function fileUrl(path) {
   if (!path) return "";
-  // Full URLs and local previews ("blob:...") are used as they are
   return /^(https?:|blob:)/.test(path) ? path : `${SERVER_URL}${path}`;
 }
 
@@ -75,35 +67,29 @@ export function formatDate(date) {
   });
 }
 
-// For <input type="date">: "2026-03-12"
 export function toInputDate(date) {
   return date ? new Date(date).toISOString().slice(0, 10) : "";
 }
 
-// Session times are shown in the user's local time
 function pad(number) {
   return String(number).padStart(2, "0");
 }
 
-// Local day of a date: "2026-03-12"
 export function toLocalDateKey(date) {
   const d = new Date(date);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-// For <input type="datetime-local">: "2026-03-12T14:30"
 export function toInputDateTime(date) {
   if (!date) return "";
   const d = new Date(date);
   return `${toLocalDateKey(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-// "2:30 PM"
 export function formatTime(date) {
   return new Date(date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
-// "2026-03-12" -> "Thu, 12 Mar 2026"
 export function formatDayKey(key) {
   return new Date(`${key}T00:00:00`).toLocaleDateString("en-GB", {
     weekday: "short",
@@ -113,7 +99,6 @@ export function formatDayKey(key) {
   });
 }
 
-// Every day of an expo: ["2026-03-12", "2026-03-13", ...]
 export function getExpoDays(expo) {
   const days = [];
   const day = new Date(toInputDate(expo.startDate));
@@ -125,7 +110,6 @@ export function getExpoDays(expo) {
   return days;
 }
 
-// What an exhibitor profile still needs
 export function getProfileChecklist(profile) {
   return [
     { label: "Logo", done: Boolean(profile?.logo) },
@@ -135,7 +119,6 @@ export function getProfileChecklist(profile) {
   ];
 }
 
-// Download a private file with the login token (a normal link cannot send the token)
 export async function downloadFile(url, fileName) {
   try {
     const res = await api.get(url, { responseType: "blob" });
@@ -145,7 +128,6 @@ export async function downloadFile(url, fileName) {
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href), 1000);
   } catch (error) {
-    // The error message also comes as a blob, so read it as JSON
     if (error.response?.data instanceof Blob) {
       try {
         error.response.data = JSON.parse(await error.response.data.text());
@@ -159,7 +141,6 @@ export async function downloadFile(url, fileName) {
 
 export const emptySessionFilters = { day: "", type: "", topic: "", search: "" };
 
-// Filter sessions by day, type, topic and a search word (title or speaker)
 export function filterSessions(sessions, filters) {
   const search = filters.search.trim().toLowerCase();
 
@@ -176,7 +157,6 @@ export function filterSessions(sessions, filters) {
   });
 }
 
-// { "2026-03-12": [sessions sorted by start time], ... }
 export function groupSessionsByDay(sessions) {
   const groups = {};
   [...sessions]
@@ -189,18 +169,15 @@ export function groupSessionsByDay(sessions) {
   return groups;
 }
 
-// "Thu, 12 Mar 2026 · 2:30 PM - 3:30 PM"
 export function formatSessionTime(session) {
   return `${formatDayKey(toLocalDateKey(session.startTime))} · ${formatTime(session.startTime)} - ${formatTime(session.endTime)}`;
 }
 
-// "example.com" -> "https://example.com"
 export function toWebsiteUrl(website) {
   if (!website) return "";
   return /^https?:\/\//i.test(website) ? website : `https://${website}`;
 }
 
-// "just now", "5 min ago", "3 h ago", "2 days ago", then the date
 export function timeAgo(date) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (seconds < 60) return "just now";
@@ -213,14 +190,12 @@ export function timeAgo(date) {
   return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-// Chat list time: "2:30 PM" for today, else "12 Mar"
 export function formatChatTime(date) {
   if (!date) return "";
   if (toLocalDateKey(date) === toLocalDateKey(new Date())) return formatTime(date);
   return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-// The backend saves short links like "/chat/<id>". Turn them into the page for this role.
 export function getNotificationPath(link, role) {
   if (!link) return "";
   const [, first, id] = link.split("/");

@@ -1,6 +1,5 @@
 import { body, param, query } from "express-validator";
-
-const isSingleValue = (value) => typeof value === "string";
+import { isSingleValue } from "../utils/helpers.js";
 
 export const listExhibitorRules = [
   param("expoId").isMongoId().withMessage("Invalid expo id"),

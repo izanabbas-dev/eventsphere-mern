@@ -4,17 +4,14 @@ import Expo from "../models/Expo.js";
 import Session from "../models/Session.js";
 import { emitToExpo } from "../utils/socket.js";
 
-// Live update for analytics and "seats left". No personal data is sent.
 const emitRegistrationsUpdated = (expoId) => emitToExpo(expoId, "registrations_updated", { expoId });
 
-// e.g. ES-4F9A1C2B
 const makeTicketCode = () => `ES-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
 const decreaseSessionCount = (sessionId) => {
   return Session.updateOne({ _id: sessionId, registeredCount: { $gt: 0 } }, { $inc: { registeredCount: -1 } });
 };
 
-// POST /api/expos/:expoId/register
 export const registerForExpo = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 
@@ -28,7 +25,6 @@ export const registerForExpo = async (req, res) => {
     return res.status(400).json({ success: false, message: "You are already registered for this expo" });
   }
 
-  // A cancelled registration is reused and keeps its old ticket code
   if (!registration) {
     registration = new Registration({
       attendee: req.user._id,
@@ -46,7 +42,6 @@ export const registerForExpo = async (req, res) => {
   res.status(201).json({ success: true, message: "Registered for the expo", registration });
 };
 
-// POST /api/sessions/:id/register
 export const registerForSession = async (req, res) => {
   const session = await Session.findById(req.params.id);
 
@@ -83,7 +78,6 @@ export const registerForSession = async (req, res) => {
     return res.status(400).json({ success: false, message: "This session is full" });
   }
 
-  // Save the registration first, then take a seat
   const isNewRegistration = !registration;
   if (isNewRegistration) {
     registration = new Registration({ attendee: req.user._id, expo: session.expo, session: session._id });
@@ -99,7 +93,6 @@ export const registerForSession = async (req, res) => {
     { returnDocument: "after" }
   );
 
-  // Someone took the last seat at the same time, so undo the registration
   if (!updatedSession) {
     if (isNewRegistration) {
       await registration.deleteOne();
@@ -120,7 +113,6 @@ export const registerForSession = async (req, res) => {
   });
 };
 
-// DELETE /api/registrations/:id
 export const cancelRegistration = async (req, res) => {
   const registration = await Registration.findById(req.params.id);
 
@@ -138,7 +130,6 @@ export const cancelRegistration = async (req, res) => {
   if (registration.session) {
     await decreaseSessionCount(registration.session);
   } else {
-    // Cancelling the expo also cancels the attendee's sessions in that expo
     const sessionRegistrations = await Registration.find({
       attendee: req.user._id,
       expo: registration.expo,
@@ -158,7 +149,6 @@ export const cancelRegistration = async (req, res) => {
   res.status(200).json({ success: true, message: "Registration cancelled", registration });
 };
 
-// GET /api/registrations/my
 export const getMyRegistrations = async (req, res) => {
   const registrations = await Registration.find({ attendee: req.user._id })
     .sort({ createdAt: -1 })
@@ -168,7 +158,6 @@ export const getMyRegistrations = async (req, res) => {
   res.status(200).json({ success: true, count: registrations.length, registrations });
 };
 
-// GET /api/expos/:expoId/registrations?status=registered
 export const getExpoRegistrations = async (req, res) => {
   const expo = await Expo.findById(req.params.expoId);
 

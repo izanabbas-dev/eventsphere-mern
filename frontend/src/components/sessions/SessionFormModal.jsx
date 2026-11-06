@@ -14,7 +14,6 @@ const typeOptions = SESSION_TYPES.map((type) => ({ value: type, label: type[0].t
 
 const emptySpeaker = { name: "", designation: "", bio: "" };
 
-// Backend sends some errors only as a message, so show them under the right field
 function getMessageField(message) {
   if (message.includes("already booked")) return "location";
   if (message.includes("End time")) return "endTime";
@@ -23,7 +22,6 @@ function getMessageField(message) {
   return null;
 }
 
-// Create a session in an expo, or edit one when "session" is given
 export default function SessionFormModal({ expo, session, onClose, onSaved }) {
   const isEdit = Boolean(session);
 
@@ -43,7 +41,6 @@ export default function SessionFormModal({ expo, session, onClose, onSaved }) {
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
-  // Session times must be inside the expo days
   const minTime = `${toInputDate(expo.startDate)}T00:00`;
   const maxTime = `${toInputDate(expo.endDate)}T23:59`;
 
@@ -106,7 +103,6 @@ export default function SessionFormModal({ expo, session, onClose, onSaved }) {
       const message = getErrorMessage(error);
       const fieldErrors = getFieldErrors(error);
 
-      // "speakers[0].name" -> one error for the speakers list
       const speakerField = Object.keys(fieldErrors).find((field) => field.startsWith("speakers"));
       if (speakerField) fieldErrors.speakers = fieldErrors[speakerField];
 
@@ -207,7 +203,6 @@ export default function SessionFormModal({ expo, session, onClose, onSaved }) {
           />
         </div>
 
-        {/* Speakers */}
         <div role="group" aria-labelledby="speakers-label">
           <div className="mb-2 flex items-center justify-between">
             <span id="speakers-label" className="text-sm font-medium text-slate-700">
